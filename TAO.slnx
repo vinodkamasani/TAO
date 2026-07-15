@@ -3,4 +3,10 @@
     <File Path=".gitignore" />
   </Folder>
   <Project Path="src/TAO.Api/TAO.Api.csproj" />
+  <Project Path="src/TAO.Application/TAO.Application.csproj" Id="37273bd1-797e-491e-ac92-1ac261c25b0d" />
+  <Project Path="src/TAO.Domain/TAO.Domain.csproj" Id="cbc87faf-31ff-4076-a6ec-f61a3c6cc4af" />
+  <Project Path="src/TAO.Infrastructure/TAO.Infrastructure.csproj" Id="e6081ccd-bd13-4db6-a9e6-97c1b3387996" />
+  <Project Path="src/TAO.SharedKernel/TAO.SharedKernel.csproj" Id="a6c22423-0e8d-48e2-916c-51bbad9ba226" />
+  <Project Path="tests/TAO.IntegrationTests/TAO.IntegrationTests.csproj" Id="ec7df6e4-a964-492d-9ec5-9183c249d158" />
+  <Project Path="tests/TAO.UnitTests/TAO.UnitTests.csproj" Id="d60367d7-3cab-4cc2-bcec-69e848eb1898" />
 </Solution>
