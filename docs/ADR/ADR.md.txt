@@ -1,0 +1,205 @@
+Decision: Model AssessmentStrategy as a Value Object in the MVP.
+
+Reason: It has no independent identity or lifecycle. It exists only as part of a Campaign.
+
+Future trigger for refactoring: If TAO introduces reusable assessment strategy templates, versioning, or independent management, promote AssessmentStrategy to an Entity or Aggregate Root.
+
+
+Title
+
+Adopt Vertical Slice Development Strategy
+
+Decision
+
+Rather than completing all entities in the Domain first, TAO will be developed feature-by-feature using Vertical Slice Architecture.
+
+Reason
+
+Earlier validation
+Faster feedback
+Less speculative design
+Real use cases drive architecture
+Easier testing
+Lower refactoring cost
+
+
+Title: Adopt Modular Monolith with Vertical Slice Architecture for the MVP.
+
+Decision:
+Build TAO as a modular monolith using Clean Architecture and Vertical Slice Architecture.
+
+Why:
+
+Single development team.
+Faster MVP delivery.
+Simpler deployment and debugging.
+Lower operational overhead.
+Strong module boundaries.
+Straightforward migration path to microservices if needed.
+
+
+Title: Use MediatR, FluentValidation, and Mapster in the Application layer.
+
+Decision: Adopt these libraries to support CQRS, validation, and object mapping while keeping the application layer focused on orchestration rather than plumbing.
+
+Title: Database-First Design, Feature-First Implementation
+
+Decision:
+Design the complete logical database model before implementation, but create physical tables, EF Core configurations, repositories, and migrations incrementally as each Vertical Slice requires them.
+
+Reasoning:
+
+Avoids painting ourselves into a corner with poor relationships.
+Prevents building unnecessary tables for MVP.
+Keeps implementation aligned with Vertical Slice Architecture.
+Makes future features predictable because the data model is already planned.
+
+
+Title: AI Resume Screening is a Core Domain Module
+
+Decision: Treat AI Resume Screening as a first-class module in TAO Acquire rather than as a utility under Campaigns.
+
+Reasoning:
+
+It has its own business workflow and lifecycle.
+It encapsulates AI parsing, matching, scoring, and ranking.
+It will evolve independently (multiple AI models, re-screening, explainability, confidence scores).
+It is a key differentiator of TAO compared to traditional ATS systems.
+
+
+Title: Resume Screening is the Core Capability of TAO Acquire
+
+Decision:
+Model Resume Screening as a primary domain capability rather than treating Resume Matching as a simple utility.
+
+Reasoning:
+Resume Screening encompasses parsing, AI analysis, match scoring, explanation generation, recommendations, confidence scoring, and candidate selection. Resume Matching is one step within that broader workflow.
+
+
+Title: Introduce Resume Import Job as a first-class domain concept.
+
+Decision: Resume ingestion will be modeled as an Import Job owned by a Campaign. Uploaded files are processed asynchronously, structured candidate data is persisted, and original files are retained only according to the organization's retention policy.
+
+Reasoning: This supports large uploads, progress tracking, retries, partial failures, auditing, and future connector-based imports while keeping storage costs under control.
+
+I actually think this is becoming one of the core aggregates of TAO Acquire, alongside Campaign. It models the real business process of ingesting resumes much better than treating uploads as a simple file attachment.
+
+
+
+
+Title: Hybrid Resume Matching Engine
+
+Decision:
+Resume matching will use a hybrid approach:
+
+AI extracts and normalizes hiring requirements from the Job Description.
+AI parses and normalizes resume content.
+A deterministic scoring engine calculates the match percentage using configurable rules and weights.
+AI generates a human-readable explanation and confidence level.
+
+Why?
+
+Transparent and explainable scoring.
+Consistent results for identical inputs.
+Easy to tune business rules without changing prompts.
+Recruiters can understand and trust why a candidate matched or didn't.
+Easier to test and validate than relying on an LLM to produce a single percentage.
+
+
+AI-First Configuration
+
+Decision
+
+Every configurable workflow in TAO Acquire should be proposed by AI first.
+
+The recruiter should review and approve or modify the proposal rather than configuring it manually from scratch.
+
+Applies to
+
+Job Profile
+Resume Matching Strategy
+Screening Rules
+Assessment Strategy
+Candidate Invitation Templates
+Future Hiring Recommendations
+
+Reasoning
+
+Reduces recruiter effort.
+Keeps human oversight.
+Improves consistency across campaigns.
+Makes TAO feel like an AI hiring assistant rather than a configurable ATS.
+
+
+
+
+
+Title: Candidate and Resume are separate domain concepts.
+
+Decision: Model Candidate and Resume as separate entities.
+
+Reasoning:
+
+A candidate can submit multiple versions of a resume.
+The same candidate may apply to multiple campaigns.
+Resume screening is campaign-specific, while candidate identity is organization-wide.
+This avoids duplicating candidate information across resumes.
+
+
+Title: AI-First Domain Model
+
+Decision:
+TAO Acquire's domain model will be centered around AI-assisted hiring concepts (Job Profile, Hiring Strategy, Resume Screening) rather than traditional ATS concepts alone.
+
+Reasoning:
+
+AI is the primary value proposition of TAO.
+Recruiters review and approve AI-generated artifacts rather than configuring everything manually.
+The data model reflects the business workflow, not just CRUD operations.
+This keeps AI outputs as first-class business assets that can be audited, refined, and reused.
+
+
+Title: Introduce Application as a Core Aggregate in the Recruitment Lifecycle
+
+Decision:
+A Candidate is independent of any campaign. The relationship between a Campaign and a Candidate is represented by an Application.
+
+Reasoning:
+
+A candidate can apply to multiple campaigns.
+Each application has its own resume, screening result, assessment, and hiring outcome.
+The application becomes the lifecycle object that progresses through screening, assessment, and hiring.
+This models real-world recruitment systems and avoids duplicating candidate data.
+
+
+
+Title: Tenant-First Database Design
+
+Decision: Design the database starting with Organization as the root of tenancy. Every business entity in TAO Acquire will belong to exactly one organization, either directly or transitively.
+
+Reasoning:
+
+Multi-tenancy is a core architectural requirement.
+Prevents cross-tenant data leakage.
+Simplifies authorization and query filtering.
+Makes future scaling and tenant isolation straightforward.
+
+
+ADR-00X – Abstract Resume Storage
+
+Decision
+
+Resume storage will be abstracted behind a storage provider.
+
+For the MVP, resumes will be stored in SQL Server.
+
+Future implementations may use Azure Blob Storage or other object stores without changing the domain or application layers.
+
+Reasoning
+
+No Azure costs during MVP.
+Simpler deployment.
+Clean migration path.
+No dependency on cloud infrastructure.
+Storage mechanism remains an Infrastructure concern.
+

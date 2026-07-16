@@ -1,0 +1,86 @@
+# TAO Technical Debt Register
+
+## Purpose
+
+This document tracks all intentional technical debt accepted during the MVP.
+
+Technical debt is **not a bug**.
+
+It is a conscious engineering decision to simplify implementation, accelerate delivery, or defer optimization.
+
+Each item should include:
+- Why the debt exists
+- Business impact
+- Technical impact
+- Recommended solution
+- Priority
+- Status
+
+---
+
+| ID | Area | Current Implementation | Future Improvement | Reason | Priority | Status |
+|----|------|------------------------|--------------------|--------|----------|--------|
+
+
+| ID | TDR-001 |
+|------|---------|
+| Area | Domain |
+| Title | ExperienceLevel implemented as enum |
+| Current Implementation | JobProfile uses an ExperienceLevel enum (Junior, Senior, Lead, etc.). |
+| Future Improvement | Replace ExperienceLevel with an ExperienceRange Value Object (MinimumYears, MaximumYears). |
+| Reason | Keeps the MVP simple while allowing Resume Matching to be implemented quickly. |
+| Business Impact | Low |
+| Technical Impact | AI Resume Matching will be less precise. |
+| Priority | Medium |
+| Status | Open |
+
+| ID | TDR-002 |
+|------|---------|
+| Area | Domain |
+| Title | JobProfile kept minimal |
+| Current Implementation | JobProfile contains only core fields required for MVP. |
+| Future Improvement | Add Responsibilities, Required Skills, Preferred Skills, Certifications, AI-generated competencies, and Assessment Focus Areas. |
+| Reason | Avoid over-modeling before the Resume Matching and Assessment modules are implemented. |
+| Business Impact | Low |
+| Technical Impact | Future enhancements will require extending the aggregate. |
+| Priority | Medium |
+| Status | Open |
+
+
+| ID | TDR-003 |
+|------|---------|
+| Area | Domain |
+| Title | Domain Events deferred |
+| Current Implementation | AggregateRoot does not currently support Domain Events. |
+| Future Improvement | Introduce Domain Events when aggregate interactions require asynchronous processing. |
+| Reason | No current business requirement justifies the additional complexity. |
+| Business Impact | None |
+| Technical Impact | Some future workflows may require refactoring. |
+| Priority | Low |
+| Status | Open |
+
+
+| ID | TDR-004 |
+|------|---------|
+| Area | SharedKernel |
+| Title | Simplified Result Pattern |
+| Current Implementation | Result supports only a single Error object. |
+| Future Improvement | Extend Result to support collections of validation errors and richer error metadata. |
+| Reason | Keeps the MVP implementation lightweight while remaining extensible. |
+| Business Impact | None |
+| Technical Impact | FluentValidation integration will require extending Result. |
+| Priority | Medium |
+| Status | Open |
+
+| ID | TDR-005 |
+|------|---------|
+| Area | Domain |
+| Title | Audit fields use protected setters |
+| Current Implementation | CreatedOnUtc, ModifiedOnUtc, CreatedBy, and ModifiedBy use protected setters. |
+| Future Improvement | Replace property setters with internal domain methods to better encapsulate audit behavior. |
+| Reason | Simpler implementation for the MVP. |
+| Business Impact | None |
+| Technical Impact | Slightly weaker encapsulation. |
+| Priority | Low |
+| Status | Open |
+
