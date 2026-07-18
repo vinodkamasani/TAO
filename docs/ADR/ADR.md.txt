@@ -203,3 +203,32 @@ Clean migration path.
 No dependency on cloud infrastructure.
 Storage mechanism remains an Infrastructure concern.
 
+
+📌 ADR-002 – Tenant Key on Business Tables
+
+Decision
+
+Every business table in TAO will contain an OrganizationId column, even when ownership can be inferred through relationships.
+
+Reasoning
+
+Simplifies tenant filtering.
+Improves query performance.
+Supports row-level security in the future.
+Reduces unnecessary joins.
+Makes tenant isolation explicit throughout the data model.
+
+
+ADR-003 – Store AI-Generated Job Profile as Markdown
+
+Decision
+
+The human-readable AI-generated Job Profile will be stored as Markdown.
+
+Reasoning
+
+Easy to edit and render.
+Preserves formatting.
+Works well with LLMs.
+Easily exportable to HTML or PDF.
+Avoids proprietary rich-text formats.
