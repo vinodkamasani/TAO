@@ -1,8 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TAO.Application.Common.Interfaces;
 
 namespace TAO.Infrastructure;
 
-public sealed class TaoDbContext : DbContext
+public sealed class TaoDbContext : DbContext, IApplicationDbContext
 {
     public TaoDbContext(DbContextOptions<TaoDbContext> options)
         : base(options)

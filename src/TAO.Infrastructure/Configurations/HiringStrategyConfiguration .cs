@@ -9,7 +9,7 @@ public sealed class HiringStrategyConfiguration : IEntityTypeConfiguration<Hirin
 {
     public void Configure(EntityTypeBuilder<HiringStrategy> builder)
     {
-        builder.ToTable("HiringStrategy");
+        builder.ToTable("HiringStrategies");
 
         builder.ConfigurePrimaryKey();
 

@@ -9,7 +9,7 @@ public sealed class ResumeImportFailureConfiguration : IEntityTypeConfiguration<
 {
     public void Configure(EntityTypeBuilder<ResumeImportFailure> builder)
     {
-        builder.ToTable("ResumeImportFailure");
+        builder.ToTable("ResumeImportFailures");
 
         builder.ConfigurePrimaryKey();
 

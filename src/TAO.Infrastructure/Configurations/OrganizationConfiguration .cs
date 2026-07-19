@@ -9,7 +9,7 @@ public sealed class OrganizationConfiguration : IEntityTypeConfiguration<Organiz
 {
     public void Configure(EntityTypeBuilder<Organization> builder)
     {
-        builder.ToTable("Organization");
+        builder.ToTable("Organizations");
 
         builder.ConfigurePrimaryKey();
 

@@ -9,7 +9,7 @@ public sealed class ResumeImportConfiguration : IEntityTypeConfiguration<ResumeI
 {
     public void Configure(EntityTypeBuilder<ResumeImport> builder)
     {
-        builder.ToTable("ResumeImport");
+        builder.ToTable("ResumeImports");
 
         builder.ConfigurePrimaryKey();
 

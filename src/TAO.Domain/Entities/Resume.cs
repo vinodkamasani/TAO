@@ -1,6 +1,9 @@
 ﻿using TAO.Domain.Common;
 using TAO.Domain.Exceptions;
 
+
+namespace TAO.Domain.Entities;
+
 public sealed class Resume : Entity
 {
     private Resume()
