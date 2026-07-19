@@ -29,9 +29,9 @@ public sealed class Campaign : Entity
             referenceNumber,
             nameof(ReferenceNumber));
 
-        CreatedByUserId = Guard.AgainstEmpty(
+        RecruiterId = Guard.AgainstEmpty(
             createdByUserId,
-            nameof(CreatedByUserId));
+            nameof(RecruiterId));
 
         HiringManagerUserId = Guard.AgainstEmpty(
             hiringManagerUserId,

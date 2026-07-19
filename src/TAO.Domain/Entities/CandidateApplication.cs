@@ -3,13 +3,13 @@ using TAO.Domain.Exceptions;
 
 namespace TAO.Domain.Entities;
 
-public sealed class Application : Entity
+public sealed class CandidateApplication : Entity
 {
-    private Application()
+    private CandidateApplication()
     {
     }
 
-    public Application(
+    public CandidateApplication(
         Guid organizationId,
         Guid campaignId,
         string candidateName,

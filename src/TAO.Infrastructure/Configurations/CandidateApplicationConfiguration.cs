@@ -5,14 +5,13 @@ using TAO.Infrastructure.Persistence.Extensions;
 
 namespace TAO.Infrastructure.Persistence.Configurations;
 
-public sealed class ApplicationConfiguration : IEntityTypeConfiguration<Application>
+public sealed class CandidateApplicationConfiguration : IEntityTypeConfiguration<CandidateApplication>
 {
-    public void Configure(EntityTypeBuilder<Application> builder)
+    public void Configure(EntityTypeBuilder<CandidateApplication> builder)
     {
-        builder.ToTable("Application");
+        builder.ToTable("CandidateApplications");
 
         builder.ConfigurePrimaryKey();
-
         builder.ConfigureAuditColumns();
 
         builder.Property(x => x.OrganizationId)
@@ -22,16 +21,15 @@ public sealed class ApplicationConfiguration : IEntityTypeConfiguration<Applicat
             .IsRequired();
 
         builder.Property(x => x.CandidateName)
-            .IsRequired()
-            .HasMaxLength(200);
+            .HasMaxLength(200)
+            .IsRequired();
 
         builder.Property(x => x.Email)
-            .IsRequired()
-            .HasMaxLength(256);
+            .HasMaxLength(320)
+            .IsRequired();
 
         builder.Property(x => x.Phone)
-            .IsRequired()
-            .HasMaxLength(30);
+            .HasMaxLength(20);
 
         builder.Property(x => x.LinkedInUrl)
             .HasMaxLength(500);
@@ -64,6 +62,30 @@ public sealed class ApplicationConfiguration : IEntityTypeConfiguration<Applicat
             .HasForeignKey(x => x.CampaignId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasIndex(x => x.OrganizationId);
+
         builder.HasIndex(x => x.CampaignId);
+
+        builder.HasIndex(x => x.Email);
+
+        builder.HasIndex(x => new
+        {
+            x.OrganizationId,
+            x.CampaignId
+        });
+
+        builder.HasIndex(x => new
+        {
+            x.OrganizationId,
+            x.CampaignId,
+            x.IsRecommended
+        });
+
+        builder.HasIndex(x => new
+        {
+            x.OrganizationId,
+            x.CampaignId,
+            x.OverallMatchPercentage
+        });
     }
 }
