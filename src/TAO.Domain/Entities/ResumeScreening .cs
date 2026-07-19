@@ -11,7 +11,7 @@ public sealed class ResumeScreening : Entity
 
     public ResumeScreening(
         Guid organizationId,
-        Guid resumeId,
+        Guid applicationId,
         MarkdownContent content,
         StructuredContent structuredContent)
     {
@@ -19,9 +19,9 @@ public sealed class ResumeScreening : Entity
             organizationId,
             nameof(OrganizationId));
 
-        ResumeId = Guard.AgainstEmpty(
-            resumeId,
-            nameof(ResumeId));
+        ApplicationId = Guard.AgainstEmpty(
+            applicationId,
+            nameof(ApplicationId));
 
         Content = content;
 
@@ -32,7 +32,7 @@ public sealed class ResumeScreening : Entity
 
     public Guid OrganizationId { get; }
 
-    public Guid ResumeId { get; }
+    public Guid ApplicationId { get; }
 
     public MarkdownContent Content { get; }
 

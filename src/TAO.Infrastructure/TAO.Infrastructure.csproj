@@ -24,4 +24,11 @@
     <ProjectReference Include="..\TAO.SharedKernel\TAO.SharedKernel.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="DependencyInjection\" />
+    <Folder Include="Migrations\" />
+    <Folder Include="Interceptors\" />
+    <Folder Include="Persistence\Database\" />
+  </ItemGroup>
+
 </Project>

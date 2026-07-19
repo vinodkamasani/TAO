@@ -11,16 +11,16 @@ public sealed class ResumeProfile : Entity
 
     public ResumeProfile(
         Guid organizationId,
-        Guid resumeId,
+        Guid applicationId,
         StructuredContent structuredContent)
     {
         OrganizationId = Guard.AgainstEmpty(
             organizationId,
             nameof(OrganizationId));
 
-        ResumeId = Guard.AgainstEmpty(
-            resumeId,
-            nameof(ResumeId));
+        ApplicationId = Guard.AgainstEmpty(
+            applicationId,
+            nameof(ApplicationId));
 
         StructuredContent = structuredContent;
 
@@ -29,7 +29,7 @@ public sealed class ResumeProfile : Entity
 
     public Guid OrganizationId { get; }
 
-    public Guid ResumeId { get; }
+    public Guid ApplicationId { get; }
 
     public StructuredContent StructuredContent { get; }
 

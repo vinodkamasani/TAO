@@ -50,7 +50,7 @@ public sealed class Campaign : Entity
 
     public string ReferenceNumber { get; }
 
-    public Guid CreatedByUserId { get; }
+    public Guid RecruiterId { get; }
 
     public Guid HiringManagerUserId { get; private set; }
 
