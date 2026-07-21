@@ -19,7 +19,9 @@ namespace TAO.Infrastructure.Persistence.Migrations
                     Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Code = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Status = table.Column<byte>(type: "tinyint", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: false),
+                    ModifiedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     ModifiedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: true)
                 },
                 constraints: table =>
@@ -38,7 +40,9 @@ namespace TAO.Infrastructure.Persistence.Migrations
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
                     Role = table.Column<byte>(type: "tinyint", nullable: false),
                     Status = table.Column<byte>(type: "tinyint", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: false),
+                    ModifiedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     ModifiedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: true)
                 },
                 constraints: table =>
@@ -59,11 +63,14 @@ namespace TAO.Infrastructure.Persistence.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     OrganizationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    ReferenceNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     RecruiterId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    HiringManagerUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    HiringManagerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     NumberOfOpenings = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<byte>(type: "tinyint", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: false),
+                    ModifiedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     ModifiedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: true)
                 },
                 constraints: table =>
@@ -76,8 +83,8 @@ namespace TAO.Infrastructure.Persistence.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Campaigns_Users_HiringManagerUserId",
-                        column: x => x.HiringManagerUserId,
+                        name: "FK_Campaigns_Users_HiringManagerId",
+                        column: x => x.HiringManagerId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -106,7 +113,9 @@ namespace TAO.Infrastructure.Persistence.Migrations
                     IsRecommended = table.Column<bool>(type: "bit", nullable: false),
                     ResumeUploadedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: false),
                     LastScreenedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: true),
+                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: false),
+                    ModifiedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     ModifiedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: true)
                 },
                 constraints: table =>
@@ -139,7 +148,9 @@ namespace TAO.Infrastructure.Persistence.Migrations
                     GeneratedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: false),
                     ApprovedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     ApprovedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: true),
+                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: false),
+                    ModifiedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     ModifiedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: true)
                 },
                 constraints: table =>
@@ -179,7 +190,9 @@ namespace TAO.Infrastructure.Persistence.Migrations
                     GeneratedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: false),
                     ApprovedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     ApprovedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: true),
+                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: false),
+                    ModifiedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     ModifiedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: true)
                 },
                 constraints: table =>
@@ -216,7 +229,9 @@ namespace TAO.Infrastructure.Persistence.Migrations
                     TotalFiles = table.Column<int>(type: "int", nullable: false),
                     SuccessfulFiles = table.Column<int>(type: "int", nullable: false),
                     FailedFiles = table.Column<int>(type: "int", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: false),
+                    ModifiedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     ModifiedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: true)
                 },
                 constraints: table =>
@@ -245,7 +260,9 @@ namespace TAO.Infrastructure.Persistence.Migrations
                     ApplicationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     StructuredContent = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     GeneratedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: false),
+                    ModifiedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     ModifiedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: true)
                 },
                 constraints: table =>
@@ -276,7 +293,9 @@ namespace TAO.Infrastructure.Persistence.Migrations
                     ContentType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     FileSize = table.Column<long>(type: "bigint", nullable: false),
                     FileContent = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: false),
+                    ModifiedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     ModifiedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: true)
                 },
                 constraints: table =>
@@ -306,7 +325,9 @@ namespace TAO.Infrastructure.Persistence.Migrations
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     StructuredContent = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     GeneratedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: false),
+                    ModifiedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     ModifiedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: true)
                 },
                 constraints: table =>
@@ -335,7 +356,9 @@ namespace TAO.Infrastructure.Persistence.Migrations
                     ResumeImportId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     FileName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     FailureReason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: false),
+                    ModifiedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     ModifiedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: true)
                 },
                 constraints: table =>
@@ -356,9 +379,9 @@ namespace TAO.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Campaigns_HiringManagerUserId",
+                name: "IX_Campaigns_HiringManagerId",
                 table: "Campaigns",
-                column: "HiringManagerUserId");
+                column: "HiringManagerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Campaigns_OrganizationId",

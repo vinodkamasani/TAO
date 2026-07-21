@@ -20,11 +20,15 @@ public sealed class CampaignConfiguration : IEntityTypeConfiguration<Campaign>
         builder.Property(x => x.RecruiterId)
             .IsRequired();
 
-        builder.Property(x => x.HiringManagerUserId)
+        builder.Property(x => x.HiringManagerId)
             .IsRequired();
 
         builder.Property(x => x.Name)
             .HasMaxLength(200)
+            .IsRequired();
+
+        builder.Property(x => x.ReferenceNumber)
+            .HasMaxLength(50)
             .IsRequired();
 
         builder.Property(x => x.NumberOfOpenings)
@@ -46,14 +50,14 @@ public sealed class CampaignConfiguration : IEntityTypeConfiguration<Campaign>
 
         builder.HasOne<User>()
             .WithMany()
-            .HasForeignKey(x => x.HiringManagerUserId)
+            .HasForeignKey(x => x.HiringManagerId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(x => x.OrganizationId);
 
         builder.HasIndex(x => x.RecruiterId);
 
-        builder.HasIndex(x => x.HiringManagerUserId);
+        builder.HasIndex(x => x.HiringManagerId);
 
         builder.HasIndex(x => x.Status);
 

@@ -6,8 +6,7 @@ namespace TAO.Domain.Abstractions;
 
 public abstract class AuditableEntity : AggregateRoot
 {
-    protected AuditableEntity(Guid id)
-        : base(id)
+    protected AuditableEntity()
     {
     }
 

@@ -24,4 +24,9 @@
     <ProjectReference Include="..\TAO.Infrastructure\TAO.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Common\" />
+    <Folder Include="Exceptions\" />
+  </ItemGroup>
+
 </Project>
