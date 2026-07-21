@@ -389,6 +389,12 @@ namespace TAO.Infrastructure.Persistence.Migrations
                 column: "OrganizationId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Campaigns_OrganizationId_ReferenceNumber",
+                table: "Campaigns",
+                columns: new[] { "OrganizationId", "ReferenceNumber" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Campaigns_OrganizationId_Status",
                 table: "Campaigns",
                 columns: new[] { "OrganizationId", "Status" });

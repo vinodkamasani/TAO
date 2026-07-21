@@ -12,7 +12,7 @@ using TAO.Infrastructure;
 namespace TAO.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(TaoDbContext))]
-    [Migration("20260721050032_InitialCreate")]
+    [Migration("20260721062415_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -76,6 +76,9 @@ namespace TAO.Infrastructure.Persistence.Migrations
                     b.HasIndex("RecruiterId");
 
                     b.HasIndex("Status");
+
+                    b.HasIndex("OrganizationId", "ReferenceNumber")
+                        .IsUnique();
 
                     b.HasIndex("OrganizationId", "Status");
 

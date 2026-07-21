@@ -1,3 +1,4 @@
+using TAO.Api;
 using TAO.Api.Endpoints;
 using TAO.Api.Middleware;
 using TAO.Application;

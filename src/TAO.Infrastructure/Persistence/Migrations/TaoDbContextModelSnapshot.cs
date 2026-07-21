@@ -74,6 +74,9 @@ namespace TAO.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("Status");
 
+                    b.HasIndex("OrganizationId", "ReferenceNumber")
+                        .IsUnique();
+
                     b.HasIndex("OrganizationId", "Status");
 
                     b.ToTable("Campaigns", (string)null);
