@@ -1,5 +1,6 @@
 ﻿using TAO.Domain.Common;
 using TAO.Domain.Enums;
+using TAO.Domain.Exceptions;
 
 namespace TAO.Domain.Entities;
 
@@ -10,66 +11,66 @@ public sealed class Campaign : Entity
     }
 
     public Campaign(
-        Guid organizationId,
-        string name,
-        string referenceNumber,
-        Guid createdByUserId,
-        Guid hiringManagerUserId,
-        int numberOfOpenings)
+    Guid organizationId,
+    string name,
+    string referenceNumber,
+    Guid recruiterId,
+    Guid hiringManagerId,
+    int numberOfOpenings)
     {
         OrganizationId = Guard.AgainstEmpty(
             organizationId,
-            nameof(OrganizationId));
+            nameof(organizationId));
 
         Name = Guard.AgainstNullOrWhiteSpace(
             name,
-            nameof(Name));
+            nameof(name));
 
         ReferenceNumber = Guard.AgainstNullOrWhiteSpace(
             referenceNumber,
-            nameof(ReferenceNumber));
+            nameof(referenceNumber));
 
         RecruiterId = Guard.AgainstEmpty(
-            createdByUserId,
-            nameof(RecruiterId));
+            recruiterId,
+            nameof(recruiterId));
 
-        HiringManagerUserId = Guard.AgainstEmpty(
-            hiringManagerUserId,
-            nameof(HiringManagerUserId));
+        HiringManagerId = Guard.AgainstEmpty(
+            hiringManagerId,
+            nameof(hiringManagerId));
 
         NumberOfOpenings = Guard.AgainstGreaterThanZero(
             numberOfOpenings,
-            nameof(NumberOfOpenings));
+            nameof(numberOfOpenings));
 
         Status = CampaignStatus.Ready;
     }
 
-    public Guid OrganizationId { get; }
+    public Guid OrganizationId { get; private set; }
 
     public string Name { get; private set; } = string.Empty;
 
-    public string ReferenceNumber { get; }
+    public string ReferenceNumber { get; private set; } = string.Empty;
 
-    public Guid RecruiterId { get; }
+    public Guid RecruiterId { get; private set; }
 
-    public Guid HiringManagerUserId { get; private set; }
+    public Guid HiringManagerId { get; private set; }
 
     public int NumberOfOpenings { get; private set; }
 
     public CampaignStatus Status { get; private set; }
 
-    public void Rename(string name)
+    public void ChangeName(string name)
     {
         Name = Guard.AgainstNullOrWhiteSpace(
             name,
             nameof(Name));
     }
 
-    public void ChangeHiringManager(Guid hiringManagerUserId)
+    public void ChangeHiringManager(Guid hiringManagerId)
     {
-        HiringManagerUserId = Guard.AgainstEmpty(
-            hiringManagerUserId,
-            nameof(HiringManagerUserId));
+        HiringManagerId = Guard.AgainstEmpty(
+            hiringManagerId,
+            nameof(HiringManagerId));
     }
 
     public void ChangeNumberOfOpenings(int numberOfOpenings)
@@ -85,6 +86,8 @@ public sealed class Campaign : Entity
         {
             return;
         }
+        if (Status != CampaignStatus.Ready)
+            throw new DomainException("Only ready campaigns can be opened.");
 
         Status = CampaignStatus.Open;
     }
@@ -95,6 +98,8 @@ public sealed class Campaign : Entity
         {
             return;
         }
+        if (Status != CampaignStatus.Open)
+            throw new DomainException("Only open campaigns can be closed.");
 
         Status = CampaignStatus.Closed;
     }
@@ -105,6 +110,8 @@ public sealed class Campaign : Entity
         {
             return;
         }
+        if (Status != CampaignStatus.Closed)
+            throw new DomainException("Only closed campaigns can be archived.");
 
         Status = CampaignStatus.Archived;
     }

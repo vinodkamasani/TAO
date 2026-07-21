@@ -1,3 +1,7 @@
+using TAO.Api;
+using TAO.Api.Endpoints;
+using TAO.Api.Middleware;
+using TAO.Application;
 using TAO.Infrastructure.DependencyInjection;
 
 
@@ -8,13 +12,25 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 
 
+builder.Services.AddApplication();
+builder.Services.AddProblemDetails();
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddInfrastructure(builder.Configuration);
+
+
 // Services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
+app.UseHttpsRedirection();
+
+
+app.MapEndpoints();
 
 // Middleware
 if (app.Environment.IsDevelopment())
@@ -23,7 +39,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
 
 
 app.Run();
