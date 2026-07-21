@@ -1,5 +1,7 @@
-﻿using TAO.Api.Endpoints.Organizations;
-using TAO.Api.Endpoints.Campaigns;
+﻿using TAO.Api.Endpoints.Campaigns;
+
+
+namespace TAO.Api;
 
 public static class EndpointExtensions
 {

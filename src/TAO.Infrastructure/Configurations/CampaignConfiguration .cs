@@ -64,6 +64,12 @@ public sealed class CampaignConfiguration : IEntityTypeConfiguration<Campaign>
         builder.HasIndex(x => new
         {
             x.OrganizationId,
+            x.ReferenceNumber
+        }).IsUnique();
+
+        builder.HasIndex(x => new
+        {
+            x.OrganizationId,
             x.Status
         });
     }
