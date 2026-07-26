@@ -1,47 +1,23 @@
-﻿namespace TAO.Domain.Abstractions
+﻿namespace TAO.Domain.Common;
+
+public abstract class Entity
 {
-    public abstract class Entity
+    protected Entity()
     {
-        public Guid Id { get; protected set; }
+    }
 
-        protected Entity(Guid id)
-        {
-            Id = id;
-        }
-        public override bool Equals(object? obj)
-        {
-            if (obj is not Entity other)
-            {
-                return false;
-            }
+    public Guid Id { get; init; } = Guid.CreateVersion7();
 
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
+    public Guid? CreatedBy { get; private set; }
 
-            if (GetType() != other.GetType())
-            {
-                return false;
-            }
+    public DateTime CreatedOn { get; private set; } = DateTime.UtcNow;
 
-            return Id == other.Id;
-        }
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(GetType(), Id);
-        }
+    public Guid? ModifiedBy { get; private set; }
 
-        public static bool operator ==(Entity? left, Entity? right)
-        {
-            return Equals(left, right);
-        }
+    public DateTime? ModifiedOn { get; private set; }
 
-        public static bool operator !=(Entity? left, Entity? right)
-        {
-            return !Equals(left, right);
-        }
-
-
+    public void MarkAsModified()
+    {
+        ModifiedOn = DateTime.UtcNow;
     }
 }

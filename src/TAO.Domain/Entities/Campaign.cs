@@ -1,5 +1,6 @@
 ﻿using TAO.Domain.Common;
 using TAO.Domain.Enums;
+using TAO.Domain.Exceptions;
 
 namespace TAO.Domain.Entities;
 
@@ -9,88 +10,56 @@ public sealed class Campaign : Entity
     {
     }
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-    public Campaign(
-        Guid organizationId,
-        string name,
-        string referenceNumber,
-        Guid createdByUserId,
-        Guid hiringManagerUserId,
-=======
-=======
->>>>>>> Stashed changes
     private Campaign(
         Guid organizationId,
         string name,
         string referenceNumber,
         Guid recruiterId,
         Guid hiringManagerId,
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
         int numberOfOpenings)
     {
         OrganizationId = Guard.AgainstEmpty(
             organizationId,
-            nameof(OrganizationId));
+            nameof(organizationId));
 
         Name = Guard.AgainstNullOrWhiteSpace(
             name,
-            nameof(Name));
+            nameof(name));
 
         ReferenceNumber = Guard.AgainstNullOrWhiteSpace(
             referenceNumber,
-            nameof(ReferenceNumber));
+            nameof(referenceNumber));
 
         RecruiterId = Guard.AgainstEmpty(
-<<<<<<< Updated upstream
-            createdByUserId,
-            nameof(RecruiterId));
-
-        HiringManagerUserId = Guard.AgainstEmpty(
-            hiringManagerUserId,
-            nameof(HiringManagerUserId));
-=======
             recruiterId,
-            nameof(RecruiterId));
+            nameof(recruiterId));
 
         HiringManagerId = Guard.AgainstEmpty(
             hiringManagerId,
-            nameof(HiringManagerId));
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+            nameof(hiringManagerId));
 
         NumberOfOpenings = Guard.AgainstGreaterThanZero(
             numberOfOpenings,
-            nameof(NumberOfOpenings));
+            nameof(numberOfOpenings));
 
         Status = CampaignStatus.Ready;
     }
 
-    public Guid OrganizationId { get; }
+    public Guid OrganizationId { get; private set; }
 
     public string Name { get; private set; } = string.Empty;
 
-    public string ReferenceNumber { get; }
+    public string ReferenceNumber { get; private set; } = string.Empty;
 
-    public Guid RecruiterId { get; }
+    public Guid RecruiterId { get; private set; }
 
-    public Guid HiringManagerUserId { get; private set; }
+    public Guid HiringManagerId { get; private set; }
 
     public int NumberOfOpenings { get; private set; }
 
     public CampaignStatus Status { get; private set; }
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
     public void Rename(string name)
-=======
-=======
->>>>>>> Stashed changes
     public static Campaign Create(
         Guid organizationId,
         string name,
@@ -108,8 +77,8 @@ public sealed class Campaign : Entity
             numberOfOpenings);
     }
 
+  
     public void ChangeName(string name)
->>>>>>> Stashed changes
     {
         Name = Guard.AgainstNullOrWhiteSpace(
             name,
@@ -118,22 +87,11 @@ public sealed class Campaign : Entity
         MarkAsModified();
     }
 
-    public void ChangeHiringManager(Guid hiringManagerUserId)
+    public void ChangeHiringManager(Guid hiringManagerId)
     {
-<<<<<<< Updated upstream
         HiringManagerUserId = Guard.AgainstEmpty(
             hiringManagerUserId,
             nameof(HiringManagerUserId));
-=======
-        HiringManagerId = Guard.AgainstEmpty(
-            hiringManagerId,
-            nameof(HiringManagerId));
-
-        MarkAsModified();
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
     }
 
     public void ChangeNumberOfOpenings(int numberOfOpenings)
@@ -151,21 +109,12 @@ public sealed class Campaign : Entity
         {
             return;
         }
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
 
         if (Status != CampaignStatus.Ready)
         {
             throw new DomainException(
                 "Only ready campaigns can be opened.");
         }
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
         Status = CampaignStatus.Open;
 
@@ -178,21 +127,12 @@ public sealed class Campaign : Entity
         {
             return;
         }
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
 
         if (Status != CampaignStatus.Open)
         {
             throw new DomainException(
                 "Only open campaigns can be closed.");
         }
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
         Status = CampaignStatus.Closed;
 
@@ -205,21 +145,9 @@ public sealed class Campaign : Entity
         {
             return;
         }
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
 
         if (Status != CampaignStatus.Closed)
-        {
-            throw new DomainException(
-                "Only closed campaigns can be archived.");
-        }
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+            throw new DomainException("Only closed campaigns can be archived.");
 
         Status = CampaignStatus.Archived;
 

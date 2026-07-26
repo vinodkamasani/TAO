@@ -1,4 +1,5 @@
 ﻿using TAO.Domain.Abstractions;
+using TAO.Domain.Common;
 
 namespace TAO.Domain.JobProfiles;
 
@@ -12,7 +13,7 @@ public sealed class JobProfile : Entity
         EmploymentType employmentType,
         WorkMode workMode,
         string location
-        ) : base(id)
+        ) 
     {
         Title = title;
         Summary = summary;

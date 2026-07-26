@@ -8,7 +8,7 @@ public sealed class Campaign : AuditableEntity
         Guid id,
         string name,
         string description
-        ): base(id)
+        )
     {
         Name = name;
         Description = description;
