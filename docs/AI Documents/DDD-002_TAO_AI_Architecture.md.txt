@@ -1,0 +1,427 @@
+# TAO Design Discussion Document
+
+# DDD-002 – TAO AI Architecture
+
+Version: 1.0
+
+Status: Approved for MVP
+
+Last Updated: 2026-07-22
+
+---
+
+# 1. Purpose
+
+This document defines the architectural principles, responsibilities, project structure and design decisions for all AI capabilities within TAO.
+
+The objective is to establish a single reusable AI architecture that can be used across every module while remaining provider-agnostic and easy to evolve.
+
+This document is intentionally implementation-oriented and complements the Functional Requirements (FR) and Software Design Documents (SDD).
+
+---
+
+# 2. Vision
+
+TAO is not simply a recruitment platform that uses AI.
+
+TAO is an AI-powered recruitment platform.
+
+Every major module will eventually rely on AI.
+
+Examples
+
+- Job Profile Generation
+- Resume Matching
+- Hiring Strategy
+- Assessment Strategy
+- Question Generation
+- Candidate Evaluation
+- Assessment Reports
+- TAO Coach
+
+Rather than allowing every feature to implement AI independently, TAO provides a dedicated AI architecture.
+
+---
+
+# 3. Design Principles
+
+| Principle | Decision |
+|------------|----------|
+| AI is a platform capability | Shared across all modules |
+| Provider independence | Business logic never depends on Ollama/OpenAI |
+| Vertical Slice | AI organized by business capability |
+| Business-first | AI produces business artifacts |
+| Prompt-driven | Prompt templates remain version controlled |
+| Human supervision | AI generates, humans approve |
+| Simple MVP | No unnecessary frameworks |
+
+---
+
+# 4. Why TAO.AI Exists
+
+The AI implementation should not live inside the Application project.
+
+Reasons
+
+- Prevent duplicated prompt builders.
+- Centralize AI response validation.
+- Centralize prompt management.
+- Centralize AI orchestration.
+- Reduce future refactoring.
+- Keep Application focused on business workflows.
+
+---
+
+# 5. Responsibilities
+
+TAO.AI owns
+
+- Prompt templates
+- Prompt factories/builders
+- AI orchestration
+- Response parsing
+- Response validation
+- AI feature generators
+- AI models
+- AI contracts
+
+TAO.Application owns
+
+- Commands
+- Queries
+- Business orchestration
+- Aggregate creation
+- Persistence
+
+TAO.Infrastructure owns
+
+- Ollama integration
+- HTTP communication
+- Provider SDKs
+- Authentication
+- Configuration
+- Retry policies
+
+TAO.Domain owns
+
+- Business entities
+- Value Objects
+- Business invariants
+
+---
+
+# 6. Solution Architecture
+
+```
+                 TAO.Api
+                     │
+                     ▼
+             TAO.Application
+                     │
+                     ▼
+                 TAO.AI
+                     │
+                     ▼
+          ILLMProvider (Contract)
+                     │
+                     ▼
+          TAO.Infrastructure
+                     │
+                     ▼
+                  Ollama
+```
+
+---
+
+# 7. Project References
+
+## TAO.AI references
+
+- TAO.Domain
+- TAO.SharedKernel
+
+## TAO.AI does NOT reference
+
+- TAO.Application
+- TAO.Infrastructure
+- TAO.Api
+
+Reason
+
+Prevent circular dependencies and preserve Clean Architecture.
+
+---
+
+# 8. Project Structure
+
+```
+TAO.AI
+│
+├── Abstractions
+│
+├── Common
+│
+├── JobProfiles
+│
+├── ResumeMatching
+│
+├── AssessmentStrategies
+│
+├── QuestionGeneration
+│
+├── Evaluation
+│
+└── Reports
+```
+
+Future modules will follow the same structure.
+
+---
+
+# 9. Feature Folder Structure
+
+Example
+
+```
+JobProfiles
+│
+├── Models
+│
+├── Prompts
+│
+├── Parsers
+│
+├── Validators
+│
+└── JobProfileGenerator.cs
+```
+
+Each AI capability is completely self-contained.
+
+---
+
+# 10. Prompt Strategy
+
+Prompt templates are stored as Markdown files.
+
+Example
+
+```
+Prompts
+    JobProfilePrompt.md
+```
+
+Reasons
+
+- Git versioning
+- Easy review
+- Product readable
+- Future Prompt Management
+
+Prompt templates are NOT embedded inside code.
+
+---
+
+# 11. AI Pipeline
+
+Every AI feature follows the same pipeline.
+
+```
+Business Request
+        │
+        ▼
+Prompt Builder
+        │
+        ▼
+Prompt Template
+        │
+        ▼
+LLM Provider
+        │
+        ▼
+Raw Response
+        │
+        ▼
+Response Parser
+        │
+        ▼
+Response Validator
+        │
+        ▼
+Business Result
+```
+
+No business code should process raw LLM responses.
+
+---
+
+# 12. AI Response Validation
+
+Every AI response must be validated.
+
+Validation includes
+
+- Required properties exist
+- JSON is valid
+- Business structure is valid
+- Required sections are generated
+
+Invalid AI output is rejected.
+
+The Application layer never receives malformed AI responses.
+
+---
+
+# 13. Business Results
+
+AI returns business-ready objects.
+
+Example
+
+JobProfileGenerationResult
+
+Contains
+
+- Prompt
+- RawResponse
+- ProviderName
+- ModelName
+- PromptVersion
+- GeneratedContent
+- StructuredProfile
+
+Application handlers never receive raw LLM responses.
+
+---
+
+# 14. Application Handler Responsibilities
+
+Application handlers should only
+
+- Load aggregates
+- Validate business rules
+- Invoke AI generator
+- Create/update aggregates
+- Persist
+- Return Result
+
+Application handlers never
+
+- Build prompts
+- Parse JSON
+- Validate AI output
+- Communicate with providers
+
+---
+
+# 15. Provider Independence
+
+The provider is hidden behind abstractions.
+
+```
+JobProfileGenerator
+        │
+        ▼
+ILLMProvider
+        │
+        ▼
+OllamaProvider
+```
+
+Future providers
+
+- OpenAI
+- Azure OpenAI
+- Claude
+- Gemini
+
+No Application changes required.
+
+---
+
+# 16. AI Metadata
+
+Every AI-generated business artifact persists
+
+- Prompt
+- Raw Response
+- Provider Name
+- Model Name
+- Prompt Version
+
+Purpose
+
+- Audit
+- Debugging
+- Reproducibility
+
+---
+
+# 17. Current AI Modules
+
+MVP
+
+- Job Profile Generation
+
+Next
+
+- Resume Matching
+- Assessment Strategy
+- Question Generation
+- Evaluation
+- Reports
+
+Future
+
+- TAO Coach
+
+---
+
+# 18. Deferred Decisions
+
+Post-MVP
+
+- Prompt Management UI
+- AI Retry Framework
+- Streaming Responses
+- Embeddings
+- Semantic Cache
+- Vector Search
+- Multi-provider execution
+- AI telemetry dashboard
+- Cost tracking
+- Prompt analytics
+
+---
+
+# 19. Technical Debt Register
+
+| ID | Description |
+|----|-------------|
+| AI-TDR-001 | Extract provider implementations into separate assemblies if multiple providers become complex. |
+| AI-TDR-002 | Introduce Prompt Version Repository. |
+| AI-TDR-003 | Add AI retry pipeline. |
+| AI-TDR-004 | Introduce AI execution history. |
+| AI-TDR-005 | Add Prompt Management Portal. |
+
+---
+
+# 20. Final MVP Decisions
+
+✅ Introduce TAO.AI project now.
+
+✅ Organize AI by business capability.
+
+✅ Keep provider implementations in Infrastructure.
+
+✅ Store prompts as Markdown files.
+
+✅ Validate every AI response.
+
+✅ Application never processes raw AI responses.
+
+✅ AI returns business-ready models.
+
+✅ Provider independent architecture.
+
+✅ Every future AI module follows the same pipeline.
