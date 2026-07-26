@@ -59,7 +59,6 @@ public sealed class Campaign : Entity
 
     public CampaignStatus Status { get; private set; }
 
-    public void Rename(string name)
     public static Campaign Create(
         Guid organizationId,
         string name,
@@ -89,9 +88,9 @@ public sealed class Campaign : Entity
 
     public void ChangeHiringManager(Guid hiringManagerId)
     {
-        HiringManagerUserId = Guard.AgainstEmpty(
-            hiringManagerUserId,
-            nameof(HiringManagerUserId));
+        HiringManagerId = Guard.AgainstEmpty(
+            hiringManagerId,
+            nameof(HiringManagerId));
     }
 
     public void ChangeNumberOfOpenings(int numberOfOpenings)
