@@ -10,6 +10,7 @@ public sealed class Campaign : Entity
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public Campaign(
         Guid organizationId,
         string name,
@@ -17,12 +18,17 @@ public sealed class Campaign : Entity
         Guid createdByUserId,
         Guid hiringManagerUserId,
 =======
+=======
+>>>>>>> Stashed changes
     private Campaign(
         Guid organizationId,
         string name,
         string referenceNumber,
         Guid recruiterId,
         Guid hiringManagerId,
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         int numberOfOpenings)
     {
@@ -53,6 +59,9 @@ public sealed class Campaign : Entity
         HiringManagerId = Guard.AgainstEmpty(
             hiringManagerId,
             nameof(HiringManagerId));
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         NumberOfOpenings = Guard.AgainstGreaterThanZero(
@@ -77,8 +86,11 @@ public sealed class Campaign : Entity
     public CampaignStatus Status { get; private set; }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public void Rename(string name)
 =======
+=======
+>>>>>>> Stashed changes
     public static Campaign Create(
         Guid organizationId,
         string name,
@@ -118,6 +130,9 @@ public sealed class Campaign : Entity
             nameof(HiringManagerId));
 
         MarkAsModified();
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -137,13 +152,19 @@ public sealed class Campaign : Entity
             return;
         }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 
         if (Status != CampaignStatus.Ready)
         {
             throw new DomainException(
                 "Only ready campaigns can be opened.");
         }
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         Status = CampaignStatus.Open;
@@ -158,13 +179,19 @@ public sealed class Campaign : Entity
             return;
         }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 
         if (Status != CampaignStatus.Open)
         {
             throw new DomainException(
                 "Only open campaigns can be closed.");
         }
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         Status = CampaignStatus.Closed;
@@ -179,13 +206,19 @@ public sealed class Campaign : Entity
             return;
         }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 
         if (Status != CampaignStatus.Closed)
         {
             throw new DomainException(
                 "Only closed campaigns can be archived.");
         }
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         Status = CampaignStatus.Archived;

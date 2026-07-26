@@ -207,11 +207,14 @@ namespace TAO.Infrastructure.Persistence.Migrations
                         .HasColumnType("uniqueidentifier");
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("GeneratedContent");
 =======
+=======
+>>>>>>> Stashed changes
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
 >>>>>>> Stashed changes
@@ -228,7 +231,10 @@ namespace TAO.Infrastructure.Persistence.Migrations
                         .HasColumnType("datetime2(7)");
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
                     b.Property<string>("ModelName")
                         .IsRequired()
                         .HasMaxLength(100)
