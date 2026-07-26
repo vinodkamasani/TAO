@@ -1,4 +1,6 @@
 ﻿using TAO.Api.Endpoints.Campaigns.Create;
+using TAO.Api.Endpoints.JobProfiles.Create;
+using TAO.Api.Endpoints.JobProfiles.Get;
 
 namespace TAO.Api.Endpoints.Campaigns;
 
@@ -12,7 +14,7 @@ public static class CampaignEndpoints
             .WithTags("Campaigns");
 
         group.MapCreateCampaignEndpoint();
-
+        group.MapCreateJobProfileEndpoint();
         return group;
     }
 }

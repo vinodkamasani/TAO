@@ -51,7 +51,7 @@ public sealed class CreateCampaignHandler
                     "The specified hiring manager does not exist."));
         }
 
-        var campaign = new Campaign(
+        var campaign = Campaign.Create(
             request.OrganizationId,
             request.Name,
             request.ReferenceNumber,

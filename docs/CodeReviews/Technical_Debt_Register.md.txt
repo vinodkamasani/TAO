@@ -1,0 +1,221 @@
+# TAO Technical Debt Register
+
+This document tracks architectural improvements intentionally deferred
+until after the MVP.
+
+---
+
+## TDR-001
+
+Title
+
+Replace constructors with static factory methods
+
+Area
+
+Domain
+
+Priority
+
+Medium
+
+Description
+
+Aggregates currently expose public constructors.
+
+Future Direction
+
+Campaign.Create(...)
+JobProfile.Create(...)
+Organization.Create(...)
+
+Reason Deferred
+
+Current implementation is simple and sufficient for MVP.
+
+Status
+
+Open
+
+---
+
+## TDR-002
+
+Title
+
+Tenant ownership validation
+
+Area
+
+Application
+
+Priority
+
+High
+
+Description
+
+Campaign creation validates user existence but does not verify that:
+
+- Recruiter belongs to Organization
+- Hiring Manager belongs to Organization
+
+Future Direction
+
+Enforce tenant isolation across all aggregates.
+
+Reason Deferred
+
+Single-tenant development database.
+
+Status
+
+Open
+
+---
+
+## TDR-003
+
+Title
+
+Campaign State Machine
+
+Area
+
+Domain
+
+Priority
+
+Low
+
+Description
+
+Campaign lifecycle currently uses explicit methods.
+
+Future Direction
+
+Introduce a dedicated state machine if workflow becomes more complex.
+
+Reason Deferred
+
+Current workflow is simple.
+
+Status
+
+Open
+
+---
+
+## TDR-004
+
+Title
+
+Development data seeding
+
+Area
+
+Infrastructure
+
+Priority
+
+Medium
+
+Description
+
+Integration tests currently create data manually.
+
+Future Direction
+
+Seed development data automatically during startup.
+
+Reason Deferred
+
+Few aggregates currently exist.
+
+Status
+
+Open
+
+---
+
+## TDR-005
+
+Title
+
+Integration Test Builders
+
+Area
+
+Testing
+
+Priority
+
+Low
+
+Description
+
+Introduce reusable builders:
+
+- OrganizationBuilder
+- UserBuilder
+- CampaignBuilder
+
+Reason Deferred
+
+Only two vertical slices currently exist.
+
+Status
+
+Open
+
+---
+
+## TDR-006
+
+Title
+
+Provider-agnostic test infrastructure
+
+Area
+
+Testing
+
+Priority
+
+Low
+
+Description
+
+Current integration tests use SQL Server directly.
+
+Future Direction
+
+Introduce TestContainers or provider abstraction when multiple database providers are supported.
+
+Reason Deferred
+
+SQL Server is the only supported database for MVP.
+
+Status
+
+Open
+
+---
+
+# Technical Debt Summary
+
+Total Items
+
+6
+
+High
+
+1
+
+Medium
+
+3
+
+Low
+
+2

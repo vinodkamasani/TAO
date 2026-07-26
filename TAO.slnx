@@ -2,6 +2,7 @@
   <Folder Name="/Solution Items/">
     <File Path=".gitignore" />
   </Folder>
+  <Project Path="src/TAO.AI/TAO.AI.csproj" Id="480ea672-a98d-4d37-8322-aaee378171b7" />
   <Project Path="src/TAO.Api/TAO.Api.csproj" />
   <Project Path="src/TAO.Application/TAO.Application.csproj" Id="37273bd1-797e-491e-ac92-1ac261c25b0d" />
   <Project Path="src/TAO.Domain/TAO.Domain.csproj" Id="cbc87faf-31ff-4076-a6ec-f61a3c6cc4af" />

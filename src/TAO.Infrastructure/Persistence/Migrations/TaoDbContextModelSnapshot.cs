@@ -236,6 +236,8 @@ namespace TAO.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("GeneratedContent");
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -243,11 +245,22 @@ namespace TAO.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2(7)");
 
+                    b.Property<string>("GeneratedContent")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("GeneratedContent");
+
                     b.Property<DateTime>("GeneratedOn")
                         .HasColumnType("datetime2(7)");
 
+                    b.Property<string>("ModelName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<Guid?>("ModifiedBy")
                         .HasColumnType("uniqueidentifier");
+
 
                     b.Property<DateTime?>("ModifiedOn")
                         .HasColumnType("datetime2(7)");
@@ -259,13 +272,29 @@ namespace TAO.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Prompt")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PromptVersion")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ProviderName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("RawResponse")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<byte>("Status")
                         .HasColumnType("tinyint");
 
-                    b.Property<string>("StructuredContent")
+                    b.Property<string>("StructuredProfile")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
-                        .HasColumnName("StructuredData");
+                        .HasColumnName("StructuredProfile");
 
                     b.HasKey("Id");
 

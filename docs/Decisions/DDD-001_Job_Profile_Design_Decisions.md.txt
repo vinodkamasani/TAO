@@ -1,0 +1,426 @@
+# TAO Design Discussion Document
+
+# DDD-001 – Job Profile Design Decisions
+
+Version: 1.0
+Status: Approved for MVP
+Author: TAO Architecture Team
+Last Updated: 2026-07-21
+
+---
+
+# 1. Purpose
+
+This document captures the architectural discussions, design decisions and MVP scope for the Job Profile aggregate.
+
+Unlike the Functional Requirements, this document explains why particular decisions were made, what alternatives were considered, and which capabilities were intentionally deferred.
+
+This document serves as the primary implementation reference before development begins.
+
+---
+
+# 2. Vision
+
+The Job Profile is the first AI-driven business artifact within TAO Acquire.
+
+It transforms an unstructured Job Description into an approved, structured hiring specification that becomes the source of truth for all downstream AI modules.
+
+The Job Profile is **not** simply a rewritten Job Description.
+
+It represents TAO's understanding of what the organization intends to hire.
+
+---
+
+# 3. Business Objective
+
+Recruiters should spend as little time as possible preparing hiring requirements.
+
+Instead of manually creating a Job Profile, recruiters provide a Job Description and AI performs the heavy lifting.
+
+Human involvement is limited to reviewing the generated output and either:
+
+- Approving it
+- Improving the Job Description and regenerating it
+
+---
+
+# 4. Core Design Principles
+
+| Principle | Decision |
+|------------|----------|
+| AI performs the work | AI generates the initial Job Profile |
+| Humans supervise | Recruiter reviews before approval |
+| AI makes reasonable assumptions | Missing skills and responsibilities are inferred where appropriate |
+| Original input preserved | Original Job Description is never modified |
+| Approved profile is authoritative | Downstream modules never use the original JD |
+| Provider independence | Business logic never depends on Ollama or any specific provider |
+| Simple MVP | No versioning, workflow engine or prompt management |
+
+---
+
+# 5. High-Level Workflow
+
+```
+Recruiter
+    │
+    ▼
+Upload / Paste Job Description
+    │
+    ▼
+Extract Text
+    │
+    ▼
+Generate Prompt
+    │
+    ▼
+LLM Provider (Ollama)
+    │
+    ▼
+Generate Job Profile
+    │
+    ▼
+Recruiter Reviews
+    │
+    ├── Approve
+    │
+    └── Improve JD & Regenerate
+    │
+    ▼
+Approved Job Profile
+    │
+    ▼
+Resume Screening
+Hiring Strategy
+Assessment Planning
+Question Generation
+```
+
+---
+
+# 6. AI Responsibilities
+
+The AI is responsible for four activities.
+
+## 6.1 Parse
+
+Extract text from:
+
+- PDF
+- DOCX
+- Plain text
+
+This is deterministic.
+
+---
+
+## 6.2 Normalize
+
+Organize information into a readable structure.
+
+Examples:
+
+- Role Title
+- Responsibilities
+- Required Skills
+- Good to Have Skills
+- Experience
+- Education
+
+---
+
+## 6.3 Enrich
+
+If important information is missing, AI should make reasonable assumptions.
+
+Example
+
+Input
+
+```
+Senior .NET Developer with 10 years experience
+```
+
+Possible generated profile
+
+Required Skills
+
+- C#
+- ASP.NET Core
+- SQL Server
+- REST APIs
+
+Preferred Skills
+
+- Azure
+- Docker
+- Kubernetes
+
+The recruiter remains responsible for validating the output.
+
+---
+
+## 6.4 Structure
+
+Generate a machine-readable JSON profile.
+
+This structured profile becomes the primary input for downstream AI modules.
+
+---
+
+# 7. Recruiter Responsibilities
+
+Recruiters are intentionally kept out of detailed configuration.
+
+Their responsibility is limited to:
+
+- Uploading a Job Description
+- Reviewing AI output
+- Approving it
+
+If the generated profile is unsatisfactory, the recruiter improves the Job Description and regenerates the profile.
+
+Recruiters are not expected to manually construct hiring profiles.
+
+---
+
+# 8. Regeneration Strategy
+
+After discussion, the following approach was selected.
+
+| Option | Decision |
+|----------|----------|
+| Version history | No |
+| Multiple profiles | No |
+| Regeneration | Yes |
+| Overwrite previous output | Yes |
+
+Reason
+
+Version history adds complexity without improving MVP value.
+
+The original Job Description remains available for audit purposes.
+
+---
+
+# 9. Campaign Relationship
+
+Exactly one Job Profile exists for every Hiring Campaign.
+
+Relationship
+
+Campaign (1)
+
+↓
+
+Job Profile (1)
+
+Database
+
+CampaignId has a unique index.
+
+---
+
+# 10. Aggregate Responsibility
+
+The Job Profile aggregate stores business facts only.
+
+It does not:
+
+- Communicate with Ollama
+- Build prompts
+- Parse PDFs
+- Execute AI
+
+Those responsibilities belong to the Application and Infrastructure layers.
+
+---
+
+# 11. Information Persisted
+
+The following information is persisted.
+
+| Data | Purpose |
+|------|---------|
+| OrganizationId | Tenant ownership |
+| CampaignId | Campaign relationship |
+| Original Job Description | Audit |
+| Generated Markdown | Recruiter review |
+| Structured JSON | Downstream AI |
+| Prompt | AI audit |
+| Raw LLM Response | AI audit |
+| Provider Name | Audit |
+| Model Name | Audit |
+| Prompt Version | Reproducibility |
+| Status | Business workflow |
+| GeneratedOn | Audit |
+| ApprovedOn | Audit |
+| ApprovedBy | Audit |
+
+---
+
+# 12. Information NOT Persisted
+
+The following runtime objects are intentionally excluded.
+
+- Conversation context
+- Prompt Builder
+- Token usage
+- Intermediate AI reasoning
+- Retry history
+- Prompt execution pipeline
+
+These can always be regenerated.
+
+---
+
+# 13. Aggregate Lifecycle
+
+```
+Generated
+      │
+      ▼
+Approved
+```
+
+Only one approval is permitted.
+
+After approval, downstream modules consume the Job Profile.
+
+---
+
+# 14. AI Provider Architecture
+
+The aggregate never references Ollama directly.
+
+Architecture
+
+```
+CreateJobProfileHandler
+            │
+            ▼
+IJobProfileGenerator
+            │
+            ▼
+PromptBuilder
+            │
+            ▼
+ILLMProvider
+            │
+            ▼
+Ollama
+```
+
+Future providers
+
+- Azure OpenAI
+- OpenAI
+- Claude
+- Gemini
+
+No domain changes should be required.
+
+---
+
+# 15. Downstream Consumers
+
+After approval, the Job Profile becomes the source of truth for:
+
+- Resume Intelligence
+- Hiring Strategy Generation
+- Assessment Planning
+- Question Generation
+- Candidate Evaluation
+
+The original Job Description is never used again.
+
+---
+
+# 16. Domain Model Decisions
+
+| Decision | Status |
+|----------|--------|
+| One Campaign → One Job Profile | Approved |
+| Preserve Original JD | Approved |
+| AI generates profile | Approved |
+| Recruiter approves | Approved |
+| AI metadata persisted | Approved |
+| Markdown stored | Approved |
+| Structured JSON stored | Approved |
+| Provider independent | Approved |
+| Regeneration overwrites previous output | Approved |
+
+---
+
+# 17. Deferred Decisions
+
+The following capabilities are intentionally deferred.
+
+- Job Profile version history
+- Prompt Management UI
+- Industry-specific prompts
+- Organization-specific AI learning
+- Multiple Job Profiles
+- Collaborative approval workflow
+- AI confidence scoring
+- Automatic prompt optimization
+- Manual Job Profile creation
+- Prompt analytics dashboard
+
+---
+
+# 18. Technical Debt Register
+
+| ID | Description |
+|----|-------------|
+| TDR-001 | Replace constructor with static factory method |
+| TDR-002 | Introduce JobProfile state machine if lifecycle expands |
+| TDR-003 | Support Job Profile version history |
+| TDR-004 | Add Prompt Management UI |
+| TDR-005 | Add organization-specific prompt customization |
+
+---
+
+# 19. Implementation Order
+
+1. Finalize Aggregate
+2. EF Configuration
+3. Migration
+4. AI Abstraction
+5. CreateJobProfile Command
+6. ApproveJobProfile Command
+7. Ollama Provider
+8. Integration Tests
+
+---
+
+# 20. Final MVP Decisions
+
+The following decisions are considered final for MVP.
+
+✅ One Campaign has one Job Profile.
+
+✅ Recruiter uploads only the Job Description.
+
+✅ AI infers missing information where appropriate.
+
+✅ Recruiter does not manually build hiring profiles.
+
+✅ Regeneration overwrites previous output.
+
+✅ Original Job Description is preserved.
+
+✅ Approved Job Profile becomes the source of truth.
+
+✅ Business logic remains provider-independent.
+
+✅ Ollama is the default provider.
+
+
+| ID         | Invariant                                                       |
+| ---------- | --------------------------------------------------------------- |
+| JP-INV-001 | Every Campaign owns exactly one Job Profile.                    |
+| JP-INV-002 | Original Job Description is immutable.                          |
+| JP-INV-003 | AI metadata always corresponds to the latest generated output.  |
+| JP-INV-004 | Regeneration is permitted only while the status is `Generated`. |
+| JP-INV-005 | An `Approved` Job Profile is immutable.                         |
+| JP-INV-006 | Only an approved Job Profile may be used by downstream modules. |

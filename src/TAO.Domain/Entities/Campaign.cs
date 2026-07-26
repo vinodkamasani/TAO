@@ -10,13 +10,13 @@ public sealed class Campaign : Entity
     {
     }
 
-    public Campaign(
-    Guid organizationId,
-    string name,
-    string referenceNumber,
-    Guid recruiterId,
-    Guid hiringManagerId,
-    int numberOfOpenings)
+    private Campaign(
+        Guid organizationId,
+        string name,
+        string referenceNumber,
+        Guid recruiterId,
+        Guid hiringManagerId,
+        int numberOfOpenings)
     {
         OrganizationId = Guard.AgainstEmpty(
             organizationId,
@@ -59,18 +59,39 @@ public sealed class Campaign : Entity
 
     public CampaignStatus Status { get; private set; }
 
+    public void Rename(string name)
+    public static Campaign Create(
+        Guid organizationId,
+        string name,
+        string referenceNumber,
+        Guid recruiterId,
+        Guid hiringManagerId,
+        int numberOfOpenings)
+    {
+        return new Campaign(
+            organizationId,
+            name,
+            referenceNumber,
+            recruiterId,
+            hiringManagerId,
+            numberOfOpenings);
+    }
+
+  
     public void ChangeName(string name)
     {
         Name = Guard.AgainstNullOrWhiteSpace(
             name,
             nameof(Name));
+
+        MarkAsModified();
     }
 
     public void ChangeHiringManager(Guid hiringManagerId)
     {
-        HiringManagerId = Guard.AgainstEmpty(
-            hiringManagerId,
-            nameof(HiringManagerId));
+        HiringManagerUserId = Guard.AgainstEmpty(
+            hiringManagerUserId,
+            nameof(HiringManagerUserId));
     }
 
     public void ChangeNumberOfOpenings(int numberOfOpenings)
@@ -78,6 +99,8 @@ public sealed class Campaign : Entity
         NumberOfOpenings = Guard.AgainstGreaterThanZero(
             numberOfOpenings,
             nameof(NumberOfOpenings));
+
+        MarkAsModified();
     }
 
     public void Open()
@@ -86,10 +109,16 @@ public sealed class Campaign : Entity
         {
             return;
         }
+
         if (Status != CampaignStatus.Ready)
-            throw new DomainException("Only ready campaigns can be opened.");
+        {
+            throw new DomainException(
+                "Only ready campaigns can be opened.");
+        }
 
         Status = CampaignStatus.Open;
+
+        MarkAsModified();
     }
 
     public void Close()
@@ -98,10 +127,16 @@ public sealed class Campaign : Entity
         {
             return;
         }
+
         if (Status != CampaignStatus.Open)
-            throw new DomainException("Only open campaigns can be closed.");
+        {
+            throw new DomainException(
+                "Only open campaigns can be closed.");
+        }
 
         Status = CampaignStatus.Closed;
+
+        MarkAsModified();
     }
 
     public void Archive()
@@ -110,9 +145,12 @@ public sealed class Campaign : Entity
         {
             return;
         }
+
         if (Status != CampaignStatus.Closed)
             throw new DomainException("Only closed campaigns can be archived.");
 
         Status = CampaignStatus.Archived;
+
+        MarkAsModified();
     }
 }

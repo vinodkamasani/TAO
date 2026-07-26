@@ -13,6 +13,12 @@ public sealed record StructuredContent
 
     public override string ToString() => Value;
 
+    public static implicit operator string(StructuredContent content)
+       => content.Value;
+
+    public static implicit operator StructuredContent(string value)
+        => new(value);
+
 }
 
 

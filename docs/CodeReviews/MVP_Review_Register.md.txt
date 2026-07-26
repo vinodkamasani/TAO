@@ -1,0 +1,145 @@
+# TAO MVP Review Register
+
+This document tracks review findings that should be addressed before merging
+or during the current MVP development phase.
+
+---
+
+## Review ID
+PR-001
+
+Feature
+Create Campaign Vertical Slice
+
+Review Date
+2026-07-21
+
+Reviewer
+ChatGPT (Principal Software Architect)
+
+Status
+Approved with Minor Changes
+
+---
+
+## MVP-001
+
+Category
+API
+
+Priority
+Medium
+
+Title
+Add namespace to EndpointExtensions
+
+Description
+
+EndpointExtensions.cs currently has no namespace declaration.
+
+Recommendation
+
+Place the class under the TAO.Api namespace (or the appropriate project namespace).
+
+Status
+
+Open
+
+---
+
+## MVP-002
+
+Category
+Repository
+
+Priority
+Low
+
+Title
+Remove duplicate files
+
+Description
+
+Duplicate source files with trailing spaces in the filename were found.
+
+Examples
+
+- Campaign .cs
+- CampaignConfiguration .cs
+- IntegrationTestBase .cs
+
+Recommendation
+
+Delete duplicate files before merge.
+
+Status
+
+Open
+
+---
+
+## MVP-003
+
+Category
+Database
+
+Priority
+Medium
+
+Title
+Unique index on Campaign Reference Number
+
+Description
+
+ReferenceNumber should be unique within an Organization.
+
+Recommendation
+
+Create a unique index:
+
+(OrganizationId, ReferenceNumber)
+
+Status
+
+Open
+
+---
+
+## MVP-004
+
+Category
+Business Rules
+
+Priority
+Medium
+
+Title
+Prevent duplicate campaign reference numbers
+
+Description
+
+Campaign creation currently allows duplicate reference numbers.
+
+Recommendation
+
+Validate uniqueness before creating the campaign.
+
+Return:
+
+Campaign.ReferenceNumberAlreadyExists
+
+Status
+
+Open
+
+---
+
+# Review Summary
+
+Overall Score
+
+9.2 / 10
+
+Merge Recommendation
+
+Approve after completing MVP items above.

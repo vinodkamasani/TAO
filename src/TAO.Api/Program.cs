@@ -1,9 +1,11 @@
+
 using TAO.Api;
 using TAO.Api.Endpoints;
 using TAO.Api.Middleware;
 using TAO.Application;
-using TAO.Infrastructure.DependencyInjection;
 
+using TAO.Infrastructure.DependencyInjection;
+using TAO.AI;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +19,8 @@ builder.Services.AddProblemDetails();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+builder.Services.AddAiServices(builder.Configuration);
 
 
 // Services

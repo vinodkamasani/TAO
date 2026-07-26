@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TAO.AI\TAO.AI.csproj" />
     <ProjectReference Include="..\TAO.Application\TAO.Application.csproj" />
     <ProjectReference Include="..\TAO.Infrastructure\TAO.Infrastructure.csproj" />
   </ItemGroup>

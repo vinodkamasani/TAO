@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TAO.AI\TAO.AI.csproj" />
     <ProjectReference Include="..\TAO.Domain\TAO.Domain.csproj" />
     <ProjectReference Include="..\TAO.SharedKernel\TAO.SharedKernel.csproj" />
   </ItemGroup>

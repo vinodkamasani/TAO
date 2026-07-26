@@ -25,13 +25,12 @@ public sealed class CreateCampaignTests
     {
         // Arrange
 
-        using var scope = Services.CreateScope();
 
-        var db = scope.ServiceProvider.GetRequiredService<TaoDbContext>();
+        var db = Services.GetRequiredService<TaoDbContext>();
 
         var organization = new Organization(
-            "TAO Technologies",
-            "TAO");
+            "TAO Technologies123456",
+            "TAO123456");
 
         db.Set<Organization>().Add(organization);
 
@@ -39,14 +38,14 @@ public sealed class CreateCampaignTests
             organization.Id,
             "John",
             "Recruiter",
-            "john@test.com",
+            "john12345@test.com",
             UserRole.Recruiter);
 
         var hiringManager = new User(
             organization.Id,
             "Sarah",
             "Manager",
-            "sarah@test.com",
+            "sarah12345@test.com",
             UserRole.HiringManager);
 
         db.Set<User>().Add(recruiter);
@@ -57,7 +56,7 @@ public sealed class CreateCampaignTests
         var request = new CreateCampaignRequest(
             organization.Id,
             "Senior .NET Hiring",
-            "CMP-001",
+            "CMP-0012",
             recruiter.Id,
             hiringManager.Id,
             3);
@@ -77,7 +76,7 @@ public sealed class CreateCampaignTests
         var campaign = await db
             .Set<Campaign>()
             .SingleOrDefaultAsync(x =>
-                x.ReferenceNumber == "CMP-001");
+                x.ReferenceNumber == "CMP-0012");
 
         Assert.NotNull(campaign);
 

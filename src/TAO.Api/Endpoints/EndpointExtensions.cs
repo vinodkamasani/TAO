@@ -11,7 +11,7 @@ public static class EndpointExtensions
         app.MapOrganizationEndpoints();
 
         app.MapCampaignEndpoints();
-
+        app.MapJobProfileEndpoints();
         return app;
     }
 }
