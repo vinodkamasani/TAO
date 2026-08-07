@@ -29,6 +29,14 @@ public sealed class ResumeImport : Entity
         Status = ResumeImportStatus.Queued;
     }
 
+    public static ResumeImport Create(
+        Guid organizationId,
+        Guid campaignId,
+        int totalFiles)
+    {
+        return new ResumeImport(organizationId, campaignId, totalFiles);
+    }
+
     public Guid OrganizationId { get; }
 
     public Guid CampaignId { get; }
@@ -65,4 +73,5 @@ public sealed class ResumeImport : Entity
     {
         Status = ResumeImportStatus.Failed;
     }
+
 }

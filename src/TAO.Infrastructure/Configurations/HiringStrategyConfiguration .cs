@@ -14,6 +14,7 @@ public sealed class HiringStrategyConfiguration : IEntityTypeConfiguration<Hirin
         builder.ConfigurePrimaryKey();
 
         builder.ConfigureAuditColumns();
+        builder.ConfigureAiGeneratedEntity();
 
         builder.Property(x => x.OrganizationId)
             .IsRequired();
@@ -51,6 +52,8 @@ public sealed class HiringStrategyConfiguration : IEntityTypeConfiguration<Hirin
             .WithMany()
             .HasForeignKey(x => x.ApprovedByUserId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(x => x.OrganizationId);
 
         builder.HasIndex(x => x.CampaignId)
             .IsUnique();

@@ -1,6 +1,11 @@
 ﻿using TAO.Api.Endpoints.Campaigns.Create;
+using TAO.Api.Endpoints.HiringStrategies.Approve;
+using TAO.Api.Endpoints.HiringStrategies.Create;
+using TAO.Api.Endpoints.HiringStrategies.Get;
 using TAO.Api.Endpoints.JobProfiles.Create;
 using TAO.Api.Endpoints.JobProfiles.Get;
+using TAO.Api.Endpoints.ResumeImports.Create;
+using TAO.Api.Endpoints.ResumeScreenings.Create;
 
 namespace TAO.Api.Endpoints.Campaigns;
 
@@ -15,6 +20,11 @@ public static class CampaignEndpoints
 
         group.MapCreateCampaignEndpoint();
         group.MapCreateJobProfileEndpoint();
+        group.MapCreateHiringStrategyEndpoint();
+        group.MapGetHiringStrategyEndpoint();
+        group.MapApproveHiringStrategyEndpoint();
+        group.MapCreateResumeImportEndpoint();
+        group.MapCreateResumeScreeningEndpoint();
         return group;
     }
 }

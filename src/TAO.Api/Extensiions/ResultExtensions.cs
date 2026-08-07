@@ -29,6 +29,22 @@ public static class ResultExtensions
             result.Value);
     }
 
+    public static IResult ToCreatedResult<T>(
+        this Result<T> result,
+        Func<T, string> locationFactory)
+    {
+        if (!result.IsSuccess)
+        {
+            return Results.BadRequest(result.Error);
+        }
+
+        var location = locationFactory(result.Value!);
+
+        return Results.Created(
+            location,
+            result.Value);
+    }
+
     public static IResult ToNoContentResult(
         this Result result)
     {
@@ -39,4 +55,5 @@ public static class ResultExtensions
 
         return Results.NoContent();
     }
+
 }

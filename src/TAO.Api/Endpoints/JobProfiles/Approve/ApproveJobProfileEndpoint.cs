@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TAO.Api.Extensions;
+using TAO.Application.HiringStrategies.Approve;
 using TAO.Application.JobProfiles.Approve;
 
 namespace TAO.Api.Endpoints.JobProfiles.Approve;
@@ -22,13 +23,13 @@ public static class ApproveJobProfileEndpoint
     }
 
     private static async Task<IResult> HandleAsync(
-        Guid jobProfileId,
-        [FromBody] ApproveJobProfileRequest request,
-        ISender sender,
-        CancellationToken cancellationToken)
+      Guid hiringStrategyId,
+      [FromBody] ApproveHiringStrategyRequest request,
+      ISender sender,
+      CancellationToken cancellationToken)
     {
-        var command = new ApproveJobProfileCommand(
-            jobProfileId,
+        var command = new ApproveHiringStrategyCommand(
+            hiringStrategyId,
             request.ApprovedByUserId);
 
         var result = await sender.Send(

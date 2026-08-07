@@ -24,14 +24,18 @@ internal static class TestDataFactory
         "IntegrationTest";
 
     private const int DefaultPromptVersion = 1;
+
+    private const string DefaultHiringStrategyPrompt = "Generate Hiring Strategy";
+
+ 
     public static async Task<Organization> CreateOrganizationAsync(
          IApplicationDbContext context,
          string name = "Contoso",
          string code = "CONTOSO")
     {
         var organization = new Organization(
-            name,
-            code);
+            name + $"{Guid.NewGuid()}",
+            code + $"{Guid.NewGuid()}");
 
         context.Set<Organization>()
             .Add(organization);
@@ -94,22 +98,27 @@ internal static class TestDataFactory
     }
 
     public static async Task<JobProfile> CreateGeneratedJobProfileAsync(
-     IApplicationDbContext context,
-     Guid organizationId,
-     Guid campaignId,
-     string? originalJobDescription = null,
-     string? generatedContent = null,
-     string? structuredProfile = null)
+      IApplicationDbContext context,
+      Guid organizationId,
+      Guid campaignId,
+      string? originalJobDescription = null,
+      string? prompt = null,
+      string? rawResponse = null,
+      string? providerName = null,
+      string? modelName = null,
+      int? promptVersion = null,
+      string? generatedContent = null,
+      string? structuredProfile = null)
     {
         var jobProfile = JobProfile.Create(
             organizationId,
             campaignId,
             originalJobDescription ?? DefaultJobDescription,
-            DefaultPrompt,
-            DefaultRawResponse,
-            DefaultProviderName,
-            DefaultModelName,
-            DefaultPromptVersion,
+            prompt ?? DefaultPrompt,
+            rawResponse ?? DefaultRawResponse,
+            providerName ?? DefaultProviderName,
+            modelName ?? DefaultModelName,
+            promptVersion ?? DefaultPromptVersion,
             new MarkdownContent(
                 generatedContent ??
                 "# Senior .NET Developer"),
@@ -127,5 +136,97 @@ internal static class TestDataFactory
         await context.SaveChangesAsync();
 
         return jobProfile;
+    }
+
+
+    public static async Task<JobProfile> CreateApprovedJobProfileAsync(
+     IApplicationDbContext context,
+     Guid organizationId,
+     Guid campaignId,
+     Guid approvedByUserId,
+     string? originalJobDescription = null,
+     string? prompt = null,
+     string? rawResponse = null,
+     string? providerName = null,
+     string? modelName = null,
+     int? promptVersion = null,
+     string? generatedContent = null,
+     string? structuredProfile = null)
+    {
+        var jobProfile = await CreateGeneratedJobProfileAsync(
+            context,
+            organizationId,
+            campaignId,
+            originalJobDescription,
+            prompt,
+            rawResponse,
+            providerName,
+            modelName,
+            promptVersion,
+            generatedContent,
+            structuredProfile);
+
+        jobProfile.Approve(approvedByUserId);
+
+        await context.SaveChangesAsync();
+
+        return jobProfile;
+    }
+
+    public static async Task<HiringStrategy> CreateHiringStrategyAsync(
+    IApplicationDbContext context,
+    Guid organizationId,
+    Guid campaignId,
+    string? prompt = null,
+    string? rawResponse = null,
+    string? providerName = null,
+    string? modelName = null,
+    int? promptVersion = null,
+    string? generatedContent = null,
+    string? structuredContent = null)
+    {
+        var hiringStrategy = HiringStrategy.Create(
+            organizationId,
+            campaignId,
+            prompt ?? DefaultHiringStrategyPrompt,
+            rawResponse ?? DefaultRawResponse,
+            providerName ?? DefaultProviderName,
+            modelName ?? DefaultModelName,
+            promptVersion ?? DefaultPromptVersion,
+            new MarkdownContent(
+                generatedContent ??
+                """
+            # Hiring Strategy
+
+            Recommended resume match threshold: **80%**
+            """),
+            new StructuredContent(
+                structuredContent ??
+                """
+            {
+              "minimumExperienceYears": 5,
+              "recommendedResumeMatchThreshold": 80,
+              "requiredSkills": [
+                {
+                  "name": "C#"
+                }
+              ],
+              "preferredSkills": [
+                {
+                  "name": "Azure"
+                }
+              ],
+              "recruiterGuidance": [
+                "Prioritize candidates with recent .NET experience."
+              ]
+            }
+            """));
+
+        context.Set<HiringStrategy>()
+            .Add(hiringStrategy);
+
+        await context.SaveChangesAsync();
+
+        return hiringStrategy;
     }
 }

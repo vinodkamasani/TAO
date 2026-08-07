@@ -34,4 +34,12 @@ public sealed class ResumeProfile : Entity
     public StructuredContent StructuredContent { get; }
 
     public DateTime GeneratedOn { get; }
+
+    public static ResumeProfile Create(
+        Guid organizationId,
+        Guid applicationId,
+        StructuredContent structuredContent)
+    {
+        return new ResumeProfile(organizationId, applicationId, structuredContent);
+    }
 }

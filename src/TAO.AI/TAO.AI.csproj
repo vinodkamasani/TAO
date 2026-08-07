@@ -7,17 +7,26 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="HiringStrategies\PromptTemplates\HiringStrategyPrompt.md" />
     <None Remove="JobProfiles\PromptTemplates\JobProfilePrompt.md" />
+    <None Remove="ResumeParsing\PromptTemplates\ResumeParsingPrompt.md" />
+    <None Remove="ResumeScreening\Prompts\ResumeScreeningPrompt.md" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="HiringStrategies\PromptTemplates\HiringStrategyPrompt.md" />
     <EmbeddedResource Include="JobProfiles\PromptTemplates\JobProfilePrompt.md" />
+    <EmbeddedResource Include="ResumeParsing\PromptTemplates\ResumeParsingPrompt.md" />
+    <EmbeddedResource Include="ResumeScreening\Prompts\ResumeScreeningPrompt.md" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="DocumentFormat.OpenXml" Version="3.5.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.10" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.10" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.10" />
+    <PackageReference Include="OpenAI" Version="2.12.0" />
+    <PackageReference Include="PdfPig" Version="0.1.15" />
   </ItemGroup>
 
   <ItemGroup>

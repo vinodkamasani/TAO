@@ -48,6 +48,28 @@ public sealed class CandidateApplication : Entity
         ResumeUploadedOn = DateTime.UtcNow;
     }
 
+    // Factory method similar to JobProfile entity Create pattern
+    public static CandidateApplication Create(
+        Guid organizationId,
+        Guid campaignId,
+        string candidateName,
+        string email,
+        string phone,
+        string? linkedInUrl = null,
+        string? currentCompany = null,
+        string? currentLocation = null)
+    {
+        return new CandidateApplication(
+            organizationId,
+            campaignId,
+            candidateName,
+            email,
+            phone,
+            linkedInUrl,
+            currentCompany,
+            currentLocation);
+    }
+
     public Guid OrganizationId { get; }
 
     public Guid CampaignId { get; }
@@ -74,7 +96,8 @@ public sealed class CandidateApplication : Entity
 
     public void UpdateScreeningResult(
         byte overallMatchPercentage,
-        bool isRecommended)
+        bool isRecommended,
+         DateTime screenedOn)
     {
         if (overallMatchPercentage > 100)
         {
@@ -84,6 +107,7 @@ public sealed class CandidateApplication : Entity
 
         OverallMatchPercentage = overallMatchPercentage;
         IsRecommended = isRecommended;
-        LastScreenedOn = DateTime.UtcNow;
+        LastScreenedOn = screenedOn;
     }
+
 }

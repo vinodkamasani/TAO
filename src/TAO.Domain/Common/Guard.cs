@@ -1,4 +1,5 @@
-﻿using TAO.Domain.Exceptions;
+﻿using System;
+using TAO.Domain.Exceptions;
 
 namespace TAO.Domain.Common;
 
@@ -51,5 +52,40 @@ public static class Guard
         }
 
         return value;
+    }
+
+    /// <summary>
+    /// Throws ArgumentOutOfRangeException if the provided integer is negative or zero.
+    /// </summary>
+    public static void AgainstNegativeOrZero(int value, string parameterName)
+    {
+        if (value <= 0)
+        {
+            throw new ArgumentOutOfRangeException(parameterName, "Value must be greater than zero.");
+        }
+    }
+
+    public static T AgainstNull<T>(
+        T? value,
+        string propertyName) where T : class
+    {
+        if (value is null)
+        {
+            throw new DomainException($"{propertyName} is required.");
+        }
+
+        return value;
+    }
+
+    public static T AgainstNull<T>(
+        T? value,
+        string propertyName) where T : struct
+    {
+        if (!value.HasValue)
+        {
+            throw new DomainException($"{propertyName} is required.");
+        }
+
+        return value.Value;
     }
 }

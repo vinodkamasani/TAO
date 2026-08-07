@@ -18,7 +18,7 @@ public sealed record StructuredContent
 
     public static implicit operator StructuredContent(string value)
         => new(value);
-
+    public static StructuredContent Create(string value) => new(value);
 }
 
 

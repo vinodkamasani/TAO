@@ -30,6 +30,24 @@ public sealed class ResumeScreening : Entity
         GeneratedOn = DateTime.UtcNow;
     }
 
+    public static ResumeScreening Create(
+        Guid organizationId,
+        Guid applicationId,
+        MarkdownContent content,
+        StructuredContent structuredContent)
+    {
+        Guard.AgainstEmpty(organizationId, nameof(OrganizationId));
+        Guard.AgainstEmpty(applicationId, nameof(ApplicationId));
+        Guard.AgainstNull(content, nameof(Content));
+        Guard.AgainstNull(structuredContent, nameof(StructuredContent));
+
+        return new ResumeScreening(
+            organizationId,
+            applicationId,
+            content,
+            structuredContent);
+    }
+
     public Guid OrganizationId { get; }
 
     public Guid ApplicationId { get; }
@@ -39,4 +57,5 @@ public sealed class ResumeScreening : Entity
     public StructuredContent StructuredContent { get; }
 
     public DateTime GeneratedOn { get; }
+
 }

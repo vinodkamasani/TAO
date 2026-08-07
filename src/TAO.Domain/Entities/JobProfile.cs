@@ -4,7 +4,7 @@ using TAO.Domain.ValueObjects;
 
 namespace TAO.Domain.Entities;
 
-public sealed class JobProfile : Entity
+public sealed class JobProfile : AiGeneratedArtifact
 {
     private JobProfile()
     {
@@ -21,6 +21,12 @@ public sealed class JobProfile : Entity
         int promptVersion,
         MarkdownContent generatedContent,
         StructuredContent structuredProfile)
+        : base(
+            prompt,
+            rawResponse,
+            providerName,
+            modelName,
+            promptVersion)
     {
         OrganizationId = Guard.AgainstEmpty(
             organizationId,
@@ -33,26 +39,6 @@ public sealed class JobProfile : Entity
         OriginalJobDescription = Guard.AgainstNullOrWhiteSpace(
             originalJobDescription,
             nameof(OriginalJobDescription));
-
-        Prompt = Guard.AgainstNullOrWhiteSpace(
-            prompt,
-            nameof(Prompt));
-
-        RawResponse = Guard.AgainstNullOrWhiteSpace(
-            rawResponse,
-            nameof(RawResponse));
-
-        ProviderName = Guard.AgainstNullOrWhiteSpace(
-            providerName,
-            nameof(ProviderName));
-
-        ModelName = Guard.AgainstNullOrWhiteSpace(
-            modelName,
-            nameof(ModelName));
-
-        PromptVersion = Guard.AgainstGreaterThanZero(
-            promptVersion,
-            nameof(PromptVersion));
 
         GeneratedContent = generatedContent;
 
@@ -68,15 +54,6 @@ public sealed class JobProfile : Entity
 
     public string OriginalJobDescription { get; private set; }
 
-    public string Prompt { get; private set; }
-
-    public string RawResponse { get; private set; }
-
-    public string ProviderName { get; private set; }
-
-    public string ModelName { get; private set; }
-
-    public int PromptVersion { get; private set; }
 
     public MarkdownContent GeneratedContent { get; private set; }
 
@@ -84,7 +61,6 @@ public sealed class JobProfile : Entity
 
     public JobProfileStatus Status { get; private set; }
 
-    public DateTime GeneratedOn { get; private set; }
 
     public Guid? ApprovedByUserId { get; private set; }
 
@@ -136,23 +112,23 @@ public sealed class JobProfile : Entity
 
         Prompt = Guard.AgainstNullOrWhiteSpace(
             prompt,
-            nameof(Prompt));
+            nameof(prompt));
 
         RawResponse = Guard.AgainstNullOrWhiteSpace(
             rawResponse,
-            nameof(RawResponse));
+            nameof(rawResponse));
 
         ProviderName = Guard.AgainstNullOrWhiteSpace(
             providerName,
-            nameof(ProviderName));
+            nameof(providerName));
 
         ModelName = Guard.AgainstNullOrWhiteSpace(
             modelName,
-            nameof(ModelName));
+            nameof(modelName));
 
         PromptVersion = Guard.AgainstGreaterThanZero(
             promptVersion,
-            nameof(PromptVersion));
+            nameof(promptVersion));
 
         GeneratedOn = DateTime.UtcNow;
 

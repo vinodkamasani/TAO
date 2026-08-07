@@ -2,9 +2,7 @@
 using TAO.Domain.Enums;
 using TAO.Domain.ValueObjects;
 
-namespace TAO.Domain.Entities;
-
-public sealed class HiringStrategy : Entity
+public sealed class HiringStrategy : AiGeneratedArtifact
 {
     private HiringStrategy()
     {
@@ -13,22 +11,32 @@ public sealed class HiringStrategy : Entity
     public HiringStrategy(
         Guid organizationId,
         Guid campaignId,
+        string prompt,
+        string rawResponse,
+        string providerName,
+        string modelName,
+        int promptVersion,
         MarkdownContent content,
         StructuredContent structuredContent)
+        : base(
+            prompt,
+            rawResponse,
+            providerName,
+            modelName,
+            promptVersion)
     {
         OrganizationId = Guard.AgainstEmpty(
             organizationId,
-            nameof(OrganizationId));
+            nameof(organizationId));
 
         CampaignId = Guard.AgainstEmpty(
             campaignId,
-            nameof(CampaignId));
+            nameof(campaignId));
 
         Content = content;
         StructuredContent = structuredContent;
 
         Status = HiringStrategyStatus.Generated;
-        GeneratedOn = DateTime.UtcNow;
     }
 
     public Guid OrganizationId { get; }
@@ -40,8 +48,6 @@ public sealed class HiringStrategy : Entity
     public StructuredContent StructuredContent { get; private set; }
 
     public HiringStrategyStatus Status { get; private set; }
-
-    public DateTime GeneratedOn { get; }
 
     public Guid? ApprovedByUserId { get; private set; }
 
@@ -60,5 +66,27 @@ public sealed class HiringStrategy : Entity
 
         ApprovedOn = DateTime.UtcNow;
         Status = HiringStrategyStatus.Approved;
+    }
+    public static HiringStrategy Create(
+    Guid organizationId,
+    Guid campaignId,
+    string prompt,
+    string rawResponse,
+    string providerName,
+    string modelName,
+    int promptVersion,
+    MarkdownContent content,
+    StructuredContent structuredContent)
+    {
+        return new HiringStrategy(
+            organizationId,
+            campaignId,
+            prompt,
+            rawResponse,
+            providerName,
+            modelName,
+            promptVersion,
+            content,
+            structuredContent);
     }
 }

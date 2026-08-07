@@ -42,6 +42,23 @@ public sealed class Resume : Entity
             ?? throw new DomainException("File content cannot be null.");
     }
 
+    public static Resume Create(
+        Guid organizationId,
+        Guid applicationId,
+        string fileName,
+        string contentType,
+        long fileSize,
+        byte[] fileContent)
+    {
+        return new Resume(
+            organizationId,
+            applicationId,
+            fileName,
+            contentType,
+            fileSize,
+            fileContent);
+    }
+
     public Guid OrganizationId { get; }
 
     public Guid ApplicationId { get; }

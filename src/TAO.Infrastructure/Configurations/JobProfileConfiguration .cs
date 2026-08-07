@@ -14,6 +14,7 @@ public sealed class JobProfileConfiguration : IEntityTypeConfiguration<JobProfil
         builder.ConfigurePrimaryKey();
 
         builder.ConfigureAuditColumns();
+        builder.ConfigureAiGeneratedEntity();
 
         builder.Property(x => x.OrganizationId)
             .IsRequired();
@@ -24,22 +25,6 @@ public sealed class JobProfileConfiguration : IEntityTypeConfiguration<JobProfil
         builder.Property(x => x.OriginalJobDescription)
             .IsRequired();
 
-        builder.Property(x => x.Prompt)
-            .IsRequired();
-
-        builder.Property(x => x.RawResponse)
-            .IsRequired();
-
-        builder.Property(x => x.ProviderName)
-            .HasMaxLength(100)
-            .IsRequired();
-
-        builder.Property(x => x.ModelName)
-            .HasMaxLength(100)
-            .IsRequired();
-
-        builder.Property(x => x.PromptVersion)
-            .IsRequired();
 
         builder.Property(x => x.GeneratedContent)
             .ConfigureMarkdownContent("GeneratedContent");
@@ -51,9 +36,6 @@ public sealed class JobProfileConfiguration : IEntityTypeConfiguration<JobProfil
             .HasConversion<byte>()
             .IsRequired();
 
-        builder.Property(x => x.GeneratedOn)
-            .HasColumnType("datetime2(7)")
-            .IsRequired();
 
         builder.Property(x => x.ApprovedOn)
             .HasColumnType("datetime2(7)");

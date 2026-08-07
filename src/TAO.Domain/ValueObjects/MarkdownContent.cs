@@ -18,4 +18,7 @@ public sealed record MarkdownContent
 
     public static implicit operator MarkdownContent(string value)
         => new(value);
+
+    public static MarkdownContent Create(string value)
+        => new MarkdownContent(value);
 }
