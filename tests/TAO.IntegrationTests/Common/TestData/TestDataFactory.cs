@@ -229,4 +229,166 @@ internal static class TestDataFactory
 
         return hiringStrategy;
     }
+
+    public static async Task<HiringStrategy> CreateApprovedHiringStrategyAsync(
+    IApplicationDbContext context,
+    Guid organizationId,
+    Guid campaignId,
+    Guid approvedByUserId,
+    string? prompt = null,
+    string? rawResponse = null,
+    string? providerName = null,
+    string? modelName = null,
+    int? promptVersion = null,
+    string? generatedContent = null,
+    string? structuredContent = null)
+    {
+        var hiringStrategy = await CreateHiringStrategyAsync(
+            context,
+            organizationId,
+            campaignId,
+            prompt,
+            rawResponse,
+            providerName,
+            modelName,
+            promptVersion,
+            generatedContent,
+            structuredContent);
+
+        hiringStrategy.Approve(
+            approvedByUserId);
+
+        await context.SaveChangesAsync();
+
+        return hiringStrategy;
+    }
+
+    public static async Task<AssessmentStrategy> CreateAssessmentStrategyAsync(
+        IApplicationDbContext context,
+        Guid organizationId,
+        Guid campaignId,
+        string? assessmentName = null,
+        string? prompt = null,
+        string? rawResponse = null,
+        string? providerName = null,
+        string? modelName = null,
+        int? promptVersion = null,
+        string? generatedContent = null,
+        string? structuredContent = null)
+    {
+        var assessmentStrategy = new AssessmentStrategy(
+            organizationId,
+            campaignId,
+            assessmentName ?? "Senior .NET Developer Assessment",
+            new MarkdownContent(
+                generatedContent ??
+                """
+            # Senior .NET Developer Assessment
+
+            ## Assessment Overview
+
+            **Total Rounds:** 1
+
+            **Total Duration:** 60 minutes
+
+            ## Assessment Rounds
+
+            ### Round 1: Coding
+
+            - **Difficulty:** Medium
+            - **Duration:** 60 minutes
+            - **Questions:** 3
+
+            **Competencies:**
+
+            - **C#:** High priority
+            - **ASP.NET Core:** High priority
+            """),
+            new StructuredContent(
+                structuredContent ??
+                """
+            {
+              "assessmentName": "Senior .NET Developer Assessment",
+              "rounds": [
+                {
+                  "order": 1,
+                  "type": "Coding",
+                  "difficulty": "Medium",
+                  "durationInMinutes": 60,
+                  "questionCount": 3,
+                  "competencies": [
+                    {
+                      "name": "C#",
+                      "priority": "High"
+                    },
+                    {
+                      "name": "ASP.NET Core",
+                      "priority": "High"
+                    }
+                  ]
+                }
+              ]
+            }
+            """),
+            prompt ?? "Generate Assessment Strategy",
+            rawResponse ??
+                """
+            {
+              "assessmentName": "Senior .NET Developer Assessment",
+              "rounds": [
+                {
+                  "order": 1,
+                  "type": "Coding",
+                  "difficulty": "Medium",
+                  "durationInMinutes": 60,
+                  "questionCount": 3,
+                  "competencies": [
+                    {
+                      "name": "C#",
+                      "priority": "High"
+                    }
+                  ]
+                }
+              ]
+            }
+            """,
+            providerName ?? DefaultProviderName,
+            modelName ?? DefaultModelName,
+            promptVersion ?? DefaultPromptVersion);
+
+        context.Set<AssessmentStrategy>()
+            .Add(assessmentStrategy);
+
+        await context.SaveChangesAsync();
+
+        var round = AssessmentRound.Create(
+            assessmentStrategy.Id,
+            1,
+            AssessmentRoundType.Coding,
+            AssessmentDifficulty.Medium,
+            60,
+            3,
+            new List<AssessmentRoundCompetency>
+            {
+            new()
+            {
+                Name = "C#",
+                Priority = "High",
+                MinimumPassPercentage = 70
+            },
+            new()
+            {
+                Name = "ASP.NET Core",
+                Priority = "High",
+                MinimumPassPercentage = 70
+            }
+            });
+
+        context.Set<AssessmentRound>()
+            .Add(round);
+
+        await context.SaveChangesAsync();
+
+        return assessmentStrategy;
+    }
 }

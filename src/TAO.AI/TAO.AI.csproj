@@ -7,6 +7,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="AssessmentEvaluations\PromptTemplates\AssessmentEvaluationPrompt.md" />
+    <None Remove="AssessmentFollowUps\PromptTemplates\AssessmentFollowUpPrompt.md" />
+    <None Remove="AssessmentFollowUps\PromptTemplates\AssessmentFollowUp_AI.md" />
+    <None Remove="AssessmentFollowUps\PromptTemplates\AssessmentFollowUp_Coding.md" />
+    <None Remove="AssessmentFollowUps\PromptTemplates\AssessmentFollowUp_DSA.md" />
+    <None Remove="AssessmentFollowUps\PromptTemplates\AssessmentFollowUp_SystemDesign.md" />
+    <None Remove="AssessmentFollowUps\PromptTemplates\AssessmentFollowUp_TechnicalDiscussion.md" />
+    <None Remove="AssessmentQuestionEvaluations\PromptTemplates\AssessmentQuestionEvaluationPrompt.md" />
+    <None Remove="AssessmentQuestions\PromptTemplates\AIRoundQuestionPrompt.md" />
+    <None Remove="AssessmentQuestions\PromptTemplates\AssessmentQuestionPrompt.md" />
+    <None Remove="AssessmentQuestions\PromptTemplates\CodingQuestionPrompt.md" />
+    <None Remove="AssessmentQuestions\PromptTemplates\DsaQuestionPrompt.md" />
+    <None Remove="AssessmentQuestions\PromptTemplates\SystemDesignQuestionPrompt.md" />
+    <None Remove="AssessmentQuestions\PromptTemplates\TechnicalDiscussionQuestionPrompt.md" />
+    <None Remove="AssessmentRoundEvaluations\PromptTemplates\AssessmentRoundEvaluationPrompt.md" />
+    <None Remove="AssessmentStrategies\PromptTemplates\AssessmentStrategyPrompt.md" />
     <None Remove="HiringStrategies\PromptTemplates\HiringStrategyPrompt.md" />
     <None Remove="JobProfiles\PromptTemplates\JobProfilePrompt.md" />
     <None Remove="ResumeParsing\PromptTemplates\ResumeParsingPrompt.md" />
@@ -14,6 +30,22 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="AssessmentEvaluations\PromptTemplates\AssessmentEvaluationPrompt.md" />
+    <EmbeddedResource Include="AssessmentFollowUps\PromptTemplates\AssessmentFollowUpPrompt.md" />
+    <EmbeddedResource Include="AssessmentFollowUps\PromptTemplates\AssessmentFollowUp_AI.md" />
+    <EmbeddedResource Include="AssessmentFollowUps\PromptTemplates\AssessmentFollowUp_Coding.md" />
+    <EmbeddedResource Include="AssessmentFollowUps\PromptTemplates\AssessmentFollowUp_DSA.md" />
+    <EmbeddedResource Include="AssessmentFollowUps\PromptTemplates\AssessmentFollowUp_SystemDesign.md" />
+    <EmbeddedResource Include="AssessmentFollowUps\PromptTemplates\AssessmentFollowUp_TechnicalDiscussion.md" />
+    <EmbeddedResource Include="AssessmentQuestionEvaluations\PromptTemplates\AssessmentQuestionEvaluationPrompt.md" />
+    <EmbeddedResource Include="AssessmentQuestions\PromptTemplates\AIRoundQuestionPrompt.md" />
+    <EmbeddedResource Include="AssessmentQuestions\PromptTemplates\AssessmentQuestionPrompt.md" />
+    <EmbeddedResource Include="AssessmentQuestions\PromptTemplates\CodingQuestionPrompt.md" />
+    <EmbeddedResource Include="AssessmentQuestions\PromptTemplates\DsaQuestionPrompt.md" />
+    <EmbeddedResource Include="AssessmentQuestions\PromptTemplates\SystemDesignQuestionPrompt.md" />
+    <EmbeddedResource Include="AssessmentQuestions\PromptTemplates\TechnicalDiscussionQuestionPrompt.md" />
+    <EmbeddedResource Include="AssessmentRoundEvaluations\PromptTemplates\AssessmentRoundEvaluationPrompt.md" />
+    <EmbeddedResource Include="AssessmentStrategies\PromptTemplates\AssessmentStrategyPrompt.md" />
     <EmbeddedResource Include="HiringStrategies\PromptTemplates\HiringStrategyPrompt.md" />
     <EmbeddedResource Include="JobProfiles\PromptTemplates\JobProfilePrompt.md" />
     <EmbeddedResource Include="ResumeParsing\PromptTemplates\ResumeParsingPrompt.md" />
@@ -22,6 +54,7 @@
 
   <ItemGroup>
     <PackageReference Include="DocumentFormat.OpenXml" Version="3.5.1" />
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.10" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.10" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.10" />

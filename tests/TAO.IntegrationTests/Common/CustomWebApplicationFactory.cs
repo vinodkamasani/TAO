@@ -21,6 +21,10 @@ public sealed class CustomWebApplicationFactory
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseSetting(
+       "Testing:IgnorePendingModelChanges",
+       "true");
+
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<ILLMProvider>();

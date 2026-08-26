@@ -1,6 +1,8 @@
 ﻿using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using TAO.Application.AssessmentQuestions.Services;
+using TAO.Application.AssessmentStrategies.Services;
 using TAO.Application.Common.Behaviors;
 using TAO.Application.ResumeImports.Services;
 using TAO.Application.ResumeScreenings.Services;
@@ -27,6 +29,8 @@ public static class DependencyInjection
         services.AddScoped<IResumeImportProcessor, ResumeImportProcessor>();
         services.AddScoped<IResumeScreeningMarkdownGenerator, ResumeScreeningMarkdownGenerator>();
 
+        services.AddScoped<IAssessmentStrategyMarkdownGenerator,AssessmentStrategyMarkdownGenerator>();
+        services.AddScoped<IAssessmentQuestionGenerationService,AssessmentQuestionGenerationService>();
 
         return services;
     }

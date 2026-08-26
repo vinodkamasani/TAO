@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TAO.Application.Common.Interfaces;
@@ -16,7 +17,17 @@ public static class DependencyInjection
         {
             options.UseSqlServer(
                 configuration.GetConnectionString("DefaultConnection"));
+
+            if (configuration.GetValue<bool>(
+                "Testing:IgnorePendingModelChanges"))
+            {
+                options.ConfigureWarnings(
+                    warnings =>
+                        warnings.Ignore(
+                            RelationalEventId.PendingModelChangesWarning));
+            }
         });
+
 
         services.AddScoped<IApplicationDbContext>(provider =>
             provider.GetRequiredService<TaoDbContext>());

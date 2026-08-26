@@ -1,4 +1,5 @@
 ﻿using TAO.AI.Abstractions;
+using TAO.AI.AssessmentStrategies.Contracts;
 using TAO.AI.Contracts;
 using TAO.SharedKernel.Results;
 
@@ -22,9 +23,16 @@ public sealed class FakeLLMProvider : ILLMProvider
 
     private static string GetResponse(string prompt)
     {
-        if (prompt.Contains("HIRING STRATEGY", StringComparison.OrdinalIgnoreCase))
+        if (prompt.Contains("HIRING STRATEGY", StringComparison.OrdinalIgnoreCase) && !prompt.Contains("ASSESSMENT STRATEGY", StringComparison.OrdinalIgnoreCase))
         {
             return HiringStrategyResponse;
+        }
+
+        if (prompt.Contains(
+      "ASSESSMENTNAME",
+      StringComparison.OrdinalIgnoreCase))
+        {
+            return AssessmentStrategyResponse;
         }
 
         return JobProfileResponse;
@@ -97,4 +105,97 @@ public sealed class FakeLLMProvider : ILLMProvider
       }
     }
     """;
+
+    private const string AssessmentStrategyResponse =
+"""
+{
+  "assessmentName": "Senior .NET Developer Assessment",
+  "rounds": [
+    {
+      "order": 1,
+      "type": "Dsa",
+      "difficulty": "Medium",
+      "durationInMinutes": 30,
+      "questionCount": 2,
+      "competencies": [
+        {
+          "name": "C#",
+          "priority": "High"
+        },
+        {
+          "name": "Object-Oriented Programming",
+          "priority": "High"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "type": "Coding",
+      "difficulty": "Medium",
+      "durationInMinutes": 60,
+      "questionCount": 3,
+      "competencies": [
+        {
+          "name": "C#",
+          "priority": "High"
+        },
+        {
+          "name": "ASP.NET Core",
+          "priority": "High"
+        },
+        {
+          "name": "Entity Framework Core",
+          "priority": "High"
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "type": "TechnicalDiscussion",
+      "difficulty": "Medium",
+      "durationInMinutes": 45,
+      "questionCount": 2,
+      "competencies": [
+        {
+          "name": "Object-Oriented Programming",
+          "priority": "High"
+        },
+        {
+          "name": "SOLID Principles",
+          "priority": "High"
+        },
+        {
+          "name": "Angular",
+          "priority": "High"
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "type": "SystemDesign",
+      "difficulty": "Hard",
+      "durationInMinutes": 75,
+      "questionCount": 1,
+      "competencies": [
+        {
+          "name": "REST API Development",
+          "priority": "High"
+        },
+        {
+          "name": "SQL Server",
+          "priority": "High"
+        },
+        {
+          "name": "Microservices Architecture",
+          "priority": "Low"
+        },
+        {
+          "name": "Microsoft Azure",
+          "priority": "Low"
+        }
+      ]
+    }
+  ]
+}
+""";
 }

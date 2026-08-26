@@ -58,4 +58,9 @@ public static class AiErrors
         Error.Failure(
             "AI.InvalidProviderResponse",
             "The AI provider returned an invalid response.");
+
+    public static readonly Error InvalidAssessmentStrategy =
+    Error.Validation(
+        "AI.InvalidAssessmentStrategy",
+        "The AI response does not contain a valid assessment strategy.");
 }

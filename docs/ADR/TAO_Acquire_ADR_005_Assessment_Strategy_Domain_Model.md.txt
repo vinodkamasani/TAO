@@ -1,0 +1,399 @@
+TAO Acquire – Assessment Strategy Domain Design
+
+Document ID: TAO-AQ-DD-005
+Version: 1.0 (Draft)
+Status: Approved for Implementation
+Owner: TAO Architecture
+
+1. Purpose
+
+This document defines the proposed domain model for Assessment Strategy, which represents the final planning artifact produced by TAO Acquire before candidate invitations and serves as the contract between TAO Acquire and TAO Assess.
+
+The objective is to establish a domain model that:
+
+follows DDD principles
+remains simple for the MVP
+supports recruiter customization
+provides a stable contract for TAO Assess
+allows future AI learning without redesign
+2. Position within TAO
+
+Assessment Strategy is the final planning stage in the recruitment lifecycle.
+
+Organization
+        │
+Campaign
+        │
+Job Profile (AI)
+        │
+Hiring Strategy (AI)
+        │
+Resume Screening
+        │
+Assessment Strategy (AI + Recruiter Approval)
+        │
+Candidate Invitations
+──────────────────────────────────────────────
+                TAO Assess
+──────────────────────────────────────────────
+Assessment Session
+Question Generation
+Technical Evaluation
+Assessment Report
+
+Acquire is responsible for planning.
+
+Assess is responsible for execution.
+
+3. Responsibilities
+TAO Acquire
+
+Responsible for determining:
+
+assessment rounds
+order of rounds
+duration
+difficulty
+competencies
+question count
+overall assessment plan
+TAO Assess
+
+Responsible for:
+
+generating questions
+adaptive questioning
+evaluating answers
+scoring
+evidence generation
+assessment reports
+
+Acquire decides what should be assessed.
+
+Assess decides how it is assessed.
+
+4. Aggregate Root
+AssessmentStrategy
+
+Assessment Strategy is an independent Aggregate Root.
+
+Relationship:
+
+Campaign
+    │
+    ├── JobProfile
+    ├── HiringStrategy
+    └── AssessmentStrategy
+
+Each campaign owns exactly one Assessment Strategy.
+
+5. Domain Model
+AssessmentStrategy
+AssessmentStrategy
+Properties
+Id
+
+OrganizationId
+
+CampaignId
+
+AssessmentName
+
+Status
+
+MarkdownContent
+
+StructuredContent
+
+GeneratedOn
+
+ApprovedOn
+Responsibilities
+stores AI generated strategy
+stores recruiter approved strategy
+owns Assessment Rounds
+acts as the contract for TAO Assess
+AssessmentRound
+
+Assessment Round is an Entity inside the Assessment Strategy aggregate.
+
+It cannot exist independently.
+
+Relationship
+
+AssessmentStrategy
+
+↓
+
+AssessmentRound
+Properties
+Id
+
+AssessmentStrategyId
+
+Order
+
+RoundType
+
+Difficulty
+
+DurationInMinutes
+
+QuestionCount
+
+IsEnabled
+
+Competencies
+Competencies
+
+For MVP, competencies will be stored as JSON inside AssessmentRound.
+
+Example
+
+[
+  {
+    "name": "C#",
+    "priority": "High"
+  },
+  {
+    "name": "ASP.NET Core",
+    "priority": "High"
+  },
+  {
+    "name": "SQL Server",
+    "priority": "Medium"
+  }
+]
+
+Reason:
+
+Avoid unnecessary normalization.
+
+Can be converted into a relational table later if analytics require it.
+
+6. Database Design
+AssessmentStrategies
+Id (PK)
+
+OrganizationId
+
+CampaignId
+
+AssessmentName
+
+Status
+
+MarkdownContent
+
+StructuredContent
+
+GeneratedOn
+
+ApprovedOn
+
+CreatedOn
+
+ModifiedOn
+AssessmentRounds
+Id (PK)
+
+AssessmentStrategyId (FK)
+
+Order
+
+RoundType
+
+Difficulty
+
+DurationInMinutes
+
+QuestionCount
+
+Competencies (JSON)
+
+IsEnabled
+
+CreatedOn
+
+ModifiedOn
+
+Only two tables are required for MVP.
+
+7. AI Output
+
+The AI generates structured JSON.
+
+Example
+
+{
+  "assessmentName": "Senior .NET Backend Assessment",
+
+  "totalDuration": 120,
+
+  "rounds": [
+    {
+      "order": 1,
+      "type": "Coding",
+      "difficulty": "Medium",
+      "duration": 45,
+      "questionCount": 5,
+      "isEnabled": true,
+
+      "competencies": [
+        {
+          "name": "C#",
+          "priority": "High"
+        },
+        {
+          "name": "ASP.NET Core",
+          "priority": "High"
+        }
+      ]
+    }
+  ]
+}
+
+Application Layer converts this into:
+
+Domain Entities
+Markdown
+Database records
+8. Markdown
+
+Assessment Strategy follows the same pattern as previous AI artifacts.
+
+Store:
+
+StructuredContent
+
+↓
+
+Markdown Generator
+
+↓
+
+MarkdownContent
+
+Markdown is used for:
+
+Recruiter Review
+Reports
+Future PDF export
+9. Recruiter Editing
+
+Recruiters may modify every part of the Assessment Strategy.
+
+Examples:
+
+reorder rounds
+enable/disable rounds
+change duration
+change question count
+change difficulty
+add/remove competencies
+add/remove rounds
+
+The final approved version becomes the execution contract.
+
+10. Future AI Learning
+
+Current MVP:
+
+AI generates Assessment Strategy from:
+
+Approved Job Profile
+Approved Hiring Strategy
+
+Future versions may additionally consider:
+
+Previously approved Assessment Strategies
+Organization preferences
+Historical hiring success
+Assessment performance
+Recruiter edits
+
+This learning occurs within the AI layer and does not alter the Assessment Strategy domain model.
+
+11. Design Decisions
+Assessment Strategy belongs to TAO Acquire
+
+Reason:
+
+It represents planning, not execution.
+
+Assessment Strategy is the contract for TAO Assess
+
+Reason:
+
+Assessment execution should not infer assessment plans.
+
+Assessment Round is an Entity
+
+Reason:
+
+Each round has its own identity, lifecycle within the aggregate, and may be independently edited by recruiters.
+
+Competencies remain JSON for MVP
+
+Reason:
+
+Keeps implementation simple while retaining flexibility.
+
+AI returns Structured JSON
+
+Reason:
+
+Provides a stable machine-readable contract.
+
+Markdown stored separately
+
+Reason:
+
+Supports recruiter review and future reporting.
+
+Two-table design
+
+Reason:
+
+Normalized enough for production while avoiding unnecessary complexity.
+
+12. Future Enhancements (Not in MVP)
+Assessment Strategy Templates
+Organization Default Strategies
+Competency Catalog
+AI Strategy Learning
+Version History
+Strategy Comparison
+Strategy Recommendations
+Analytics Dashboard
+Cross-campaign Strategy Reuse
+Organization-specific Assessment Patterns
+Final Architecture
+Campaign
+    │
+    ├── JobProfile
+    ├── HiringStrategy
+    ├── ResumeImports
+    ├── ResumeProfiles
+    ├── ResumeScreenings
+    └── AssessmentStrategy
+            │
+            ├── MarkdownContent
+            ├── StructuredContent
+            └── AssessmentRounds
+                    │
+                    ├── Coding
+                    ├── Technical Discussion
+                    ├── System Design
+                    └── Custom
+
+──────────────────────────────────────────
+
+TAO Assess
+
+AssessmentSession
+Question Generation
+AI Interview
+Coding Assessment
+Evaluation
+Assessment Report
