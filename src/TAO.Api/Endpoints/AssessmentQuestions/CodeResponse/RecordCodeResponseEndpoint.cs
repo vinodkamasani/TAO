@@ -14,7 +14,7 @@ public static class RecordCodeResponseEndpoint
                 "/api/assessment-questions/{assessmentQuestionId:guid}/code-response",
                 HandleAsync)
             .WithName("RecordCodeResponse")
-            .WithSummary("Records the candidate's coding workspace.");
+            .WithSummary("Records the candidate's code and generates the next follow-up question.");
 
         return app;
     }
@@ -33,6 +33,11 @@ public static class RecordCodeResponseEndpoint
             command,
             cancellationToken);
 
-        return result.ToNoContentResult();
+        if (result.IsFailure)
+        {
+            return result.ToNoContentResult();
+        }
+
+        return Results.Ok(result.Value);
     }
 }

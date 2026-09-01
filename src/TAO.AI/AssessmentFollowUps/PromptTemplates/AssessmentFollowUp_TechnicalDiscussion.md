@@ -56,31 +56,39 @@ Do not generate a follow-up merely because another question is possible.
 
 # DIFFICULTY GUIDANCE
 
-Use Difficulty only to control the depth of the follow-up.
+Difficulty is a strict ceiling on the depth and complexity of the follow-up.
+
+The follow-up must NOT be more difficult than the configured Difficulty.
+
+Difficulty must control the depth of reasoning being requested, not merely the wording of the question.
 
 Low:
-- Prefer a straightforward clarification or one deeper question about the primary topic.
-- Focus on core OOP, SOLID, design, DI, correctness, maintainability, testability, or basic trade-offs when relevant.
-- Do not introduce advanced distributed-systems, infrastructure, scalability, or operational topics unless they are directly part of the primary question or the candidate introduced them.
-- Do not make the discussion harder simply to continue it.
+- Ask only straightforward clarification or one deeper question about the primary question and the candidate's current solution.
+- Focus on core concepts, correctness, basic design decisions, straightforward trade-offs, maintainability, testability, or basic failure handling when directly relevant.
+- Do not introduce advanced architecture, distributed systems, microservices, messaging, scalability, resilience patterns, infrastructure, or complex operational concerns unless they are explicitly part of the primary question or already introduced by the candidate.
+- Do not turn a Low-difficulty question into an advanced architecture discussion.
+- Prefer clarifying or validating the candidate's existing reasoning over introducing a new technical area.
 
 Medium:
 - Probe a meaningful design trade-off, implementation consideration, failure scenario, or deeper reasoning related to the primary topic.
-- Moderate architectural depth is appropriate when relevant.
+- Moderate architectural or implementation depth is appropriate when directly relevant.
+- Do not introduce substantially advanced concepts that would normally belong to a High-difficulty discussion.
 
 High:
-- Deeper architectural reasoning, trade-offs, failure modes, scalability, reliability, security, or performance may be explored when directly related to the candidate's design.
-- Still remain anchored to the primary question and current solution.
+- Deeper architectural reasoning, trade-offs, failure modes, scalability, reliability, security, performance, or distributed-system concerns may be explored when directly related to the primary question or the candidate's existing design.
 
-Difficulty must control depth, not topic selection.
+For all difficulty levels:
 
-Do not switch to a different subject merely to assess another competency.
+- Never increase the conceptual difficulty merely to obtain another follow-up.
+- Do not introduce advanced concepts solely because they could provide a stronger assessment.
+- Do not use the follow-up to test what the candidate could discuss at a higher difficulty level.
+- Stay within the scope and expected depth of the configured difficulty.
+- Difficulty must control depth, not topic selection.
+- Do not switch to a different subject merely to assess another competency.
+- Do not use competency coverage as a reason to introduce an unrelated or substantially harder follow-up.
+- If the candidate has already sufficiently demonstrated the relevant understanding at the configured difficulty, stop regardless of difficulty.
 
-Do not use competency coverage as a reason to introduce an unrelated follow-up.
 
-If the candidate has already sufficiently demonstrated the relevant understanding, stop regardless of difficulty.
-
-Do not mention AI, internal assessment configuration, difficulty, scoring, or evaluation rules.
 
 # OUTPUT
 

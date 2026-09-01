@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using TAO.Application.AssessmentQuestions.FollowUp;
 using TAO.Application.Common.Interfaces;
 using TAO.Domain.Entities;
 using TAO.Domain.Enums;
@@ -11,18 +12,22 @@ using TAO.SharedKernel.Results;
 namespace TAO.Application.AssessmentQuestions.CandidateResponse;
 
 internal sealed class RecordCandidateResponseCommandHandler
- : IRequestHandler<RecordCandidateResponseCommand,
-     Result>
+    : IRequestHandler<
+        RecordCandidateResponseCommand,
+        Result<GenerateFollowUpResponse>>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ISender _sender;
 
     public RecordCandidateResponseCommandHandler(
-        IApplicationDbContext context)
+        IApplicationDbContext context,
+        ISender sender)
     {
         _context = context;
+        _sender = sender;
     }
 
-    public async Task<Result> Handle(
+    public async Task<Result<GenerateFollowUpResponse>> Handle(
         RecordCandidateResponseCommand request,
         CancellationToken cancellationToken)
     {
@@ -34,7 +39,7 @@ internal sealed class RecordCandidateResponseCommandHandler
 
         if (question is null)
         {
-            return Result.Failure(
+            return Result<GenerateFollowUpResponse>.Failure(
                 Error.NotFound(
                     "AssessmentQuestion.NotFound",
                     $"Assessment question '{request.AssessmentQuestionId}' was not found."));
@@ -42,7 +47,7 @@ internal sealed class RecordCandidateResponseCommandHandler
 
         if (question.Status != AssessmentQuestionStatus.InProgress)
         {
-            return Result.Failure(
+            return Result<GenerateFollowUpResponse>.Failure(
                 Error.Validation(
                     "AssessmentQuestion.NotInProgress",
                     "A candidate response can only be recorded for an in-progress question."));
@@ -50,7 +55,7 @@ internal sealed class RecordCandidateResponseCommandHandler
 
         if (question.Conversation is null)
         {
-            return Result.Failure(
+            return Result<GenerateFollowUpResponse>.Failure(
                 Error.Validation(
                     "AssessmentQuestion.ConversationNotInitialized",
                     "The assessment question does not have an initialized conversation."));
@@ -68,7 +73,7 @@ internal sealed class RecordCandidateResponseCommandHandler
         }
         catch (JsonException)
         {
-            return Result.Failure(
+            return Result<GenerateFollowUpResponse>.Failure(
                 Error.Validation(
                     "AssessmentQuestion.InvalidConversation",
                     "The stored assessment question conversation is invalid."));
@@ -94,6 +99,18 @@ internal sealed class RecordCandidateResponseCommandHandler
         await _context.SaveChangesAsync(
             cancellationToken);
 
-        return Result.Success();
+        var followUpResult = await _sender.Send(
+       new GenerateFollowUpCommand(question.Id),
+       cancellationToken);
+
+        if (followUpResult.IsFailure &&
+            followUpResult.Error?.Code ==
+                "AssessmentQuestion.FollowUpLimitReached")
+        {
+            return Result<GenerateFollowUpResponse>.Success(
+                new GenerateFollowUpResponse(null));
+        }
+
+        return followUpResult;
     }
 }

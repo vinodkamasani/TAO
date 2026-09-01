@@ -1,9 +1,10 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using TAO.Api.Extensions;
 using TAO.Application.AssessmentQuestions.CandidateResponse;
+using TAO.Api.Extensions;
 
 namespace TAO.Api.Endpoints.AssessmentQuestions.CandidateResponse;
+
 public static class RecordCandidateResponseEndpoint
 {
     public static IEndpointRouteBuilder MapRecordCandidateResponseEndpoint(
@@ -13,7 +14,7 @@ public static class RecordCandidateResponseEndpoint
                 "/api/assessment-questions/{assessmentQuestionId:guid}/response",
                 HandleAsync)
             .WithName("RecordCandidateResponse")
-            .WithSummary("Records the candidate's response to an assessment question.");
+            .WithSummary("Records the candidate's response and generates the next follow-up question.");
 
         return app;
     }
@@ -32,6 +33,11 @@ public static class RecordCandidateResponseEndpoint
             command,
             cancellationToken);
 
-        return result.ToNoContentResult();
+        if (result.IsFailure)
+        {
+            return result.ToNoContentResult();
+        }
+
+        return Results.Ok(result.Value);
     }
 }

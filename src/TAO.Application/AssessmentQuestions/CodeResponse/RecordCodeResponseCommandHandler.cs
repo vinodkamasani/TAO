@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using TAO.Application.AssessmentQuestions.FollowUp;
 using TAO.Application.Common.Interfaces;
 using TAO.Domain.Entities;
 using TAO.Domain.Enums;
@@ -11,17 +12,20 @@ namespace TAO.Application.AssessmentQuestions.CodeResponse;
 internal sealed class RecordCodeResponseCommandHandler
     : IRequestHandler<
         RecordCodeResponseCommand,
-        Result>
+        Result<GenerateFollowUpResponse>>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ISender _sender;
 
     public RecordCodeResponseCommandHandler(
-        IApplicationDbContext context)
+        IApplicationDbContext context,
+        ISender sender)
     {
         _context = context;
+        _sender = sender;
     }
 
-    public async Task<Result> Handle(
+    public async Task<Result<GenerateFollowUpResponse>> Handle(
         RecordCodeResponseCommand request,
         CancellationToken cancellationToken)
     {
@@ -33,7 +37,7 @@ internal sealed class RecordCodeResponseCommandHandler
 
         if (question is null)
         {
-            return Result.Failure(
+            return Result<GenerateFollowUpResponse>.Failure(
                 Error.NotFound(
                     "AssessmentQuestion.NotFound",
                     $"Assessment question '{request.AssessmentQuestionId}' was not found."));
@@ -41,7 +45,7 @@ internal sealed class RecordCodeResponseCommandHandler
 
         if (question.Status != AssessmentQuestionStatus.InProgress)
         {
-            return Result.Failure(
+            return Result<GenerateFollowUpResponse>.Failure(
                 Error.Validation(
                     "AssessmentQuestion.NotInProgress",
                     "Candidate code can only be recorded for an in-progress assessment question."));
@@ -55,7 +59,7 @@ internal sealed class RecordCodeResponseCommandHandler
 
         if (sessionRound is null)
         {
-            return Result.Failure(
+            return Result<GenerateFollowUpResponse>.Failure(
                 Error.NotFound(
                     "AssessmentSessionRound.NotFound",
                     $"Assessment session round '{question.AssessmentSessionRoundId}' was not found."));
@@ -64,7 +68,7 @@ internal sealed class RecordCodeResponseCommandHandler
         if (sessionRound.Type is not AssessmentRoundType.Coding
             and not AssessmentRoundType.Dsa)
         {
-            return Result.Failure(
+            return Result<GenerateFollowUpResponse>.Failure(
                 Error.Validation(
                     "AssessmentQuestion.CodeNotAllowed",
                     "Candidate code can only be recorded for Coding or DSA assessment rounds."));
@@ -75,6 +79,18 @@ internal sealed class RecordCodeResponseCommandHandler
         await _context.SaveChangesAsync(
             cancellationToken);
 
-        return Result.Success();
+        var followUpResult = await _sender.Send(
+     new GenerateFollowUpCommand(question.Id),
+     cancellationToken);
+
+        if (followUpResult.IsFailure &&
+            followUpResult.Error?.Code ==
+                "AssessmentQuestion.FollowUpLimitReached")
+        {
+            return Result<GenerateFollowUpResponse>.Success(
+                new GenerateFollowUpResponse(null));
+        }
+
+        return followUpResult;
     }
 }

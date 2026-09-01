@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using TAO.Application.AssessmentQuestions.FollowUp;
 using TAO.SharedKernel.Results;
 
 namespace TAO.Application.AssessmentQuestions.CodeResponse;
@@ -6,4 +7,4 @@ namespace TAO.Application.AssessmentQuestions.CodeResponse;
 public sealed record RecordCodeResponseCommand(
     Guid AssessmentQuestionId,
     string Code)
-    : IRequest<Result>;
+     : IRequest<Result<GenerateFollowUpResponse>>;

@@ -13,7 +13,7 @@ namespace TAO.Application.AssessmentQuestions.Services;
 internal sealed class AssessmentQuestionGenerationService
     : IAssessmentQuestionGenerationService
 {
-    private const int MaxDsaGenerationAttempts = 3;
+    private const int MaxQuestionGenerationAttempts = 3;
     private const int QuestionStartWordCount = 10;
 
     private readonly IApplicationDbContext _context;
@@ -94,71 +94,55 @@ internal sealed class AssessmentQuestionGenerationService
         }
 
         /*
-         * DSA history is used only for DSA question generation.
-         *
-         * We maintain two representations:
+         * Keep question history for every round type.
          *
          * 1. usedQuestionStarts:
-         *    Small representation sent to the LLM to discourage repetition.
+         *    Sent to the LLM to discourage generating a previously used
+         *    question.
          *
          * 2. existingQuestionHashes:
-         *    Full normalized questions used by the application as the
-         *    final duplicate protection.
+         *    Application-side duplicate protection. This is the final
+         *    check before accepting a generated question.
          */
         var usedQuestionStarts = new List<string>();
-
-      
 
         var existingQuestionHashes = new HashSet<string>(
             StringComparer.Ordinal);
 
-        if (sessionRound.Type == AssessmentRoundType.Dsa)
+        var existingQuestions = await _context
+            .Set<AssessmentQuestion>()
+            .Where(x =>
+                x.AssessmentSessionRoundId == sessionRound.Id)
+            .OrderBy(x => x.Order)
+            .ToListAsync(cancellationToken);
+
+        foreach (var existingQuestion in existingQuestions)
         {
-            var dsaRoundIds = await _context
-                .Set<AssessmentSessionRound>()
-                .Where(x =>
-                    x.AssessmentSessionId == session.Id &&
-                    x.Type == AssessmentRoundType.Dsa)
-                .Select(x => x.Id)
-                .ToListAsync(cancellationToken);
+            var normalizedQuestion =
+                NormalizeQuestion(
+                    existingQuestion.PrimaryQuestion);
 
-            var existingDsaQuestions = await _context
-                .Set<AssessmentQuestion>()
-                .Where(x =>
-                    dsaRoundIds.Contains(
-                        x.AssessmentSessionRoundId))
-                .OrderBy(x => x.Order)
-                .ToListAsync(cancellationToken);
-
-            foreach (var existingQuestion in existingDsaQuestions)
+            if (!string.IsNullOrWhiteSpace(
+                    normalizedQuestion))
             {
-                var normalizedQuestion =
-                    NormalizeQuestion(
-                        existingQuestion.PrimaryQuestion);
+                existingQuestionHashes.Add(
+                    normalizedQuestion);
+            }
 
-                if (!string.IsNullOrWhiteSpace(
-                        normalizedQuestion))
-                {
-                    existingQuestionHashes.Add(
-                        normalizedQuestion);
-                }
+            var questionStart =
+                GetQuestionStart(
+                    existingQuestion.PrimaryQuestion);
 
-                var questionStart =
-                    GetQuestionStart(
-                        existingQuestion.PrimaryQuestion);
-
-                if (!string.IsNullOrWhiteSpace(
-                        questionStart))
-                {
-                    usedQuestionStarts.Add(
-                        questionStart);
-                }
-
+            if (!string.IsNullOrWhiteSpace(
+                    questionStart))
+            {
+                usedQuestionStarts.Add(
+                    questionStart);
             }
         }
 
         for (var attempt = 1;
-             attempt <= MaxDsaGenerationAttempts;
+             attempt <= MaxQuestionGenerationAttempts;
              attempt++)
         {
             var aiResult = await _questionGenerator.GenerateAsync(
@@ -176,47 +160,33 @@ internal sealed class AssessmentQuestionGenerationService
             var generatedQuestion =
                 aiResult.Value!.Response;
 
-            /*
-             * Duplicate protection is required only for DSA.
-             *
-             * Other round types continue to use their existing
-             * generation behavior.
-             */
-            if (sessionRound.Type == AssessmentRoundType.Dsa)
+            var normalizedGeneratedQuestion =
+                NormalizeQuestion(
+                    generatedQuestion.Question);
+
+            if (existingQuestionHashes.Contains(
+                    normalizedGeneratedQuestion))
             {
-                var normalizedGeneratedQuestion =
-                    NormalizeQuestion(
+                /*
+                 * The LLM generated a question that already exists.
+                 *
+                 * Retry generation rather than returning the duplicate.
+                 */
+                var duplicateQuestionStart =
+                    GetQuestionStart(
                         generatedQuestion.Question);
 
-                if (existingQuestionHashes.Contains(
-                        normalizedGeneratedQuestion))
+                if (!string.IsNullOrWhiteSpace(
+                        duplicateQuestionStart) &&
+                    !usedQuestionStarts.Contains(
+                        duplicateQuestionStart,
+                        StringComparer.OrdinalIgnoreCase))
                 {
-                    /*
-                     * The LLM generated an existing question.
-                     *
-                     * Do not return a validation error.
-                     * Retry generation instead.
-                     *
-                     * Add the generated question start to the prompt
-                     * history in case the model produced something that
-                     * wasn't already present in the history.
-                     */
-                    var duplicateQuestionStart =
-                        GetQuestionStart(
-                            generatedQuestion.Question);
-
-                    if (!string.IsNullOrWhiteSpace(
-                            duplicateQuestionStart) &&
-                        !usedQuestionStarts.Contains(
-                            duplicateQuestionStart,
-                            StringComparer.OrdinalIgnoreCase))
-                    {
-                        usedQuestionStarts.Add(
-                            duplicateQuestionStart);
-                    }
-
-                    continue;
+                    usedQuestionStarts.Add(
+                        duplicateQuestionStart);
                 }
+
+                continue;
             }
 
             var assessmentQuestion = AssessmentQuestion.Create(
@@ -251,7 +221,7 @@ internal sealed class AssessmentQuestionGenerationService
         return Result<AssessmentQuestion>.Failure(
             Error.Validation(
                 "AssessmentQuestion.GenerationFailed",
-                "Unable to generate a new DSA question that has not already been used in this assessment session."));
+                "Unable to generate a new question that has not already been used in this assessment round."));
     }
 
     private static string GetQuestionStart(
