@@ -30,6 +30,7 @@ public static class EndpointExtensions
         app.MapCompleteAssessmentQuestionEndpoint();
         app.MapSkipAssessmentQuestionEndpoint();
         app.MapEvaluateAssessmentQuestionEndpoint();
+        app.MapCandidateApplicationEndpoints();
         return app;
     }
 }

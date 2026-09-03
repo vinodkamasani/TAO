@@ -23,13 +23,13 @@ public static class ApproveJobProfileEndpoint
     }
 
     private static async Task<IResult> HandleAsync(
-      Guid hiringStrategyId,
-      [FromBody] ApproveHiringStrategyRequest request,
-      ISender sender,
-      CancellationToken cancellationToken)
+           Guid jobProfileId,
+           [FromBody] ApproveJobProfileRequest request,
+           ISender sender,
+           CancellationToken cancellationToken)
     {
-        var command = new ApproveHiringStrategyCommand(
-            hiringStrategyId,
+        var command = new ApproveJobProfileCommand(
+            jobProfileId,
             request.ApprovedByUserId);
 
         var result = await sender.Send(

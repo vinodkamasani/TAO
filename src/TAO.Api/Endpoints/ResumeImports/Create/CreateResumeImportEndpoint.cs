@@ -19,6 +19,7 @@ public static class CreateResumeImportEndpoint
             .WithSummary("Imports resumes into a campaign.")
             .WithDescription(
                 "Uploads one or more resumes and starts the resume import process.")
+             .Accepts<CreateResumeImportRequest>("multipart/form-data")
             .DisableAntiforgery();
 
         return group;
