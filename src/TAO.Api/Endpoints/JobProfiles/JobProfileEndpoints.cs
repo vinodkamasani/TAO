@@ -11,6 +11,7 @@ public static class JobProfileEndpoints
             .WithTags("Job Profiles");
 
         group.MapGetJobProfileEndpoint();
+        group.MapGetJobProfileByCampaignEndpoint();
         group.MapApproveJobProfileEndpoint();
 
         return group;

@@ -21,7 +21,23 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddAiServices(builder.Configuration);
+const string CorsPolicy = "TaoAcquireCors";
 
+var allowedOrigins =
+    builder.Configuration
+        .GetSection("Cors:AllowedOrigins")
+        .Get<string[]>() ?? [];
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(CorsPolicy, policy =>
+    {
+        policy
+            .WithOrigins(allowedOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 
 // Services
 builder.Services.AddEndpointsApiExplorer();
@@ -33,7 +49,7 @@ var app = builder.Build();
 app.UseExceptionHandler();
 app.UseHttpsRedirection();
 
-
+app.UseCors(CorsPolicy);
 app.MapEndpoints();
 
 // Middleware
