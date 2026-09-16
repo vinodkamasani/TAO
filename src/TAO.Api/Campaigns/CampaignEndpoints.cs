@@ -23,6 +23,7 @@ public static class CampaignEndpoints
         group.MapGetCampaignsEndpoint();
         group.MapGetCampaignEndpoint();
         group.MapGetCampaignWorkflowStateEndpoint();
+        group.MapGetCampaignJobProfileEndpoint();
         group.MapCreateCampaignEndpoint();
         group.MapCreateJobProfileEndpoint();
         group.MapCreateHiringStrategyEndpoint();
