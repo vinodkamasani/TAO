@@ -1,5 +1,6 @@
 ﻿using TAO.Api.Endpoints.JobProfiles.Approve;
 using TAO.Api.Endpoints.JobProfiles.Get;
+using TAO.Api.Endpoints.JobProfiles.Regenerate;
 
 public static class JobProfileEndpoints
 {
@@ -12,6 +13,7 @@ public static class JobProfileEndpoints
 
         group.MapGetJobProfileEndpoint();
         group.MapApproveJobProfileEndpoint();
+        group.MapRegenerateJobProfileEndpoint();
 
         return group;
     }

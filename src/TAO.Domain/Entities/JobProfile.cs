@@ -92,19 +92,24 @@ public sealed class JobProfile : AiGeneratedArtifact
     }
 
     public void UpdateGeneratedContent(
-        MarkdownContent generatedContent,
-        StructuredContent structuredProfile,
-        string prompt,
-        string rawResponse,
-        string providerName,
-        string modelName,
-        int promptVersion)
+      string originalJobDescription,
+      MarkdownContent generatedContent,
+      StructuredContent structuredProfile,
+      string prompt,
+      string rawResponse,
+      string providerName,
+      string modelName,
+      int promptVersion)
     {
         if (Status == JobProfileStatus.Approved)
         {
             throw new InvalidOperationException(
                 "Approved Job Profile cannot be modified.");
         }
+
+        OriginalJobDescription = Guard.AgainstNullOrWhiteSpace(
+            originalJobDescription,
+            nameof(originalJobDescription));
 
         GeneratedContent = generatedContent;
 
