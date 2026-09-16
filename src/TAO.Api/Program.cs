@@ -22,6 +22,30 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddAiServices(builder.Configuration);
 
+// CORS Configuration
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+
+    options.AddPolicy("DevelopmentPolicy", policy =>
+    {
+        policy.WithOrigins(
+                "http://localhost:3000",
+                "http://localhost:3001",
+                "http://localhost:4200",
+                "https://localhost:3000",
+                "https://localhost:3001",
+                "https://localhost:4200")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
 
 // Services
 builder.Services.AddEndpointsApiExplorer();
@@ -33,6 +57,15 @@ var app = builder.Build();
 app.UseExceptionHandler();
 app.UseHttpsRedirection();
 
+// Use CORS - Apply the appropriate policy based on environment
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors("DevelopmentPolicy");
+}
+else
+{
+    app.UseCors("AllowAll"); // Consider using a more restrictive policy for production
+}
 
 app.MapEndpoints();
 
