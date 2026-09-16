@@ -48,15 +48,20 @@ internal sealed class SendRecommendedEmailsCommandHandler
                 x.IsRecommended)
             .Select(x => new
             {
+                x.Id,
+                x.OrganizationId,
                 x.CandidateName,
                 x.Email
             })
             .ToListAsync(cancellationToken);
 
+        const string subject =
+            "Your Application Has Been Recommended";
+
+        var sentCount = 0;
+
         foreach (var candidate in candidates)
         {
-            var subject = "Your Application Has Been Recommended";
-
             var body =
                 $"Hello {candidate.CandidateName},\n\n" +
                 "Thank you for your interest in this opportunity. " +
@@ -65,10 +70,40 @@ internal sealed class SendRecommendedEmailsCommandHandler
                 "Regards,\n" +
                 "TAO";
 
-            await _emailSender.SendAsync(
+            var emailDelivery = EmailDelivery.Create(
+                candidate.OrganizationId,
+                request.CampaignId,
+                candidate.Id,
                 candidate.Email,
                 subject,
-                body,
+                body);
+
+            _context.Set<EmailDelivery>().Add(emailDelivery);
+
+            await _context.SaveChangesAsync(
+                cancellationToken);
+
+            try
+            {
+                await _emailSender.SendAsync(
+                    candidate.Email,
+                    subject,
+                    body,
+                    cancellationToken);
+
+                emailDelivery.MarkAsSent(
+                    DateTime.UtcNow);
+
+                sentCount++;
+            }
+            catch (Exception ex)
+            {
+                emailDelivery.MarkAsFailed(
+                    ex.Message,
+                    DateTime.UtcNow);
+            }
+
+            await _context.SaveChangesAsync(
                 cancellationToken);
         }
 
@@ -76,6 +111,6 @@ internal sealed class SendRecommendedEmailsCommandHandler
             new SendRecommendedEmailsResponse(
                 request.CampaignId,
                 candidates.Count,
-                candidates.Count));
+                sentCount));
     }
 }

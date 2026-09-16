@@ -69,7 +69,6 @@ public sealed class EmailDeliveryConfiguration
         {
             x.CampaignId,
             x.CandidateApplicationId,
-            x.Status
         });
     }
 }
