@@ -1,6 +1,7 @@
 ﻿using TAO.Api.Endpoints.AssessmentStrategies.Approve;
 using TAO.Api.Endpoints.AssessmentStrategies.Create;
 using TAO.Api.Endpoints.Campaigns.Create;
+using TAO.Api.Endpoints.Campaigns.Get;
 using TAO.Api.Endpoints.HiringStrategies.Approve;
 using TAO.Api.Endpoints.HiringStrategies.Create;
 using TAO.Api.Endpoints.HiringStrategies.Get;
@@ -19,6 +20,9 @@ public static class CampaignEndpoints
             .MapGroup("/api/campaigns")
             .WithTags("Campaigns");
 
+        group.MapGetCampaignsEndpoint();
+        group.MapGetCampaignEndpoint();
+        group.MapGetCampaignWorkflowStateEndpoint();
         group.MapCreateCampaignEndpoint();
         group.MapCreateJobProfileEndpoint();
         group.MapCreateHiringStrategyEndpoint();
