@@ -19,6 +19,7 @@ public static class GetCampaignJobProfileEndpoint
                 "Shows original job description, AI-generated content, structured profile, and approval status.");
 
         return group;
+
     }
 
     private static async Task<IResult> HandleAsync(
