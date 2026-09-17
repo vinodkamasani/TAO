@@ -2,6 +2,7 @@
 using TAO.Api.Endpoints.AssessmentStrategies.Create;
 using TAO.Api.Endpoints.Campaigns.Create;
 using TAO.Api.Endpoints.Campaigns.Get;
+using TAO.Api.Endpoints.Campaigns.ScreenResumes;
 using TAO.Api.Endpoints.HiringStrategies.Approve;
 using TAO.Api.Endpoints.HiringStrategies.Create;
 using TAO.Api.Endpoints.HiringStrategies.Get;
@@ -33,6 +34,7 @@ public static class CampaignEndpoints
         group.MapCreateResumeScreeningEndpoint();
         group.MapCreateAssessmentStrategyEndpoint();
         group.MapApproveAssessmentStrategyEndpoint();
+        group.MapScreenCampaignResumesEndpoint();
         return group;
     }
 }

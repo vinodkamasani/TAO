@@ -35,6 +35,9 @@ public static class RegenerateJobProfileEndpoint
             command,
             cancellationToken);
 
-        return result.ToNoContentResult();
+        return result.ToCreatedResult(
+           result.Value is null
+               ? null
+               : $"/api/jobprofiles/{result.Value.Id}");
     }
 }

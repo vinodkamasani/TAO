@@ -1,14 +1,16 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TAO.AI.Abstractions;
+using TAO.AI.JobProfiles.Contracts;
 using TAO.Application.Common.Interfaces;
+using TAO.Application.JobProfiles.Common;
 using TAO.Domain.Entities;
 using TAO.SharedKernel.Results;
 
 namespace TAO.Application.JobProfiles.Create;
 
 internal sealed class CreateJobProfileCommandHandler
-    : IRequestHandler<CreateJobProfileCommand, Result<Guid>>
+    : IRequestHandler<CreateJobProfileCommand, Result<JobProfileResponse>>
 {
     private readonly IApplicationDbContext _context;
     private readonly IJobProfileGenerator _jobProfileGenerator;
@@ -21,7 +23,7 @@ internal sealed class CreateJobProfileCommandHandler
         _jobProfileGenerator = jobProfileGenerator;
     }
 
-    public async Task<Result<Guid>> Handle(
+    public async Task<Result<JobProfileResponse>> Handle(
         CreateJobProfileCommand request,
         CancellationToken cancellationToken)
     {
@@ -33,7 +35,7 @@ internal sealed class CreateJobProfileCommandHandler
 
         if (campaign is null)
         {
-            return Result<Guid>.Failure(
+            return Result<JobProfileResponse>.Failure(
                 Error.NotFound(
                     "Campaign.NotFound",
                     $"Campaign '{request.CampaignId}' was not found."));
@@ -45,7 +47,7 @@ internal sealed class CreateJobProfileCommandHandler
 
         if (aiResult.IsFailure)
         {
-            return Result<Guid>.Failure(aiResult.Error);
+            return Result<JobProfileResponse>.Failure(aiResult.Error);
         }
 
         var jobProfile = JobProfile.Create(
@@ -66,6 +68,17 @@ internal sealed class CreateJobProfileCommandHandler
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        return Result<Guid>.Success(jobProfile.Id);
+        var response = new JobProfileResponse(
+         jobProfile.Id,
+         jobProfile.OrganizationId,
+         jobProfile.CampaignId,
+         jobProfile.OriginalJobDescription,
+         jobProfile.GeneratedContent,
+         jobProfile.StructuredProfile,
+         jobProfile.Status,
+         jobProfile.GeneratedOn);
+
+        return Result<JobProfileResponse>.Success(
+            response);
     }
 }

@@ -2,13 +2,15 @@
 using Microsoft.EntityFrameworkCore;
 using TAO.AI.Abstractions;
 using TAO.Application.Common.Interfaces;
+using TAO.Application.JobProfiles.Common;
+using TAO.Application.JobProfiles.Create;
 using TAO.Domain.Entities;
 using TAO.SharedKernel.Results;
 
 namespace TAO.Application.JobProfiles.Regenerate;
 
 internal sealed class RegenerateJobProfileCommandHandler
-    : IRequestHandler<RegenerateJobProfileCommand, Result>
+    : IRequestHandler<RegenerateJobProfileCommand, Result<JobProfileResponse>>
 {
     private readonly IApplicationDbContext _context;
     private readonly IJobProfileGenerator _jobProfileGenerator;
@@ -21,7 +23,7 @@ internal sealed class RegenerateJobProfileCommandHandler
         _jobProfileGenerator = jobProfileGenerator;
     }
 
-    public async Task<Result> Handle(
+    public async Task<Result<JobProfileResponse>> Handle(
         RegenerateJobProfileCommand request,
         CancellationToken cancellationToken)
     {
@@ -33,7 +35,7 @@ internal sealed class RegenerateJobProfileCommandHandler
 
         if (jobProfile is null)
         {
-            return Result.Failure(
+            return Result<JobProfileResponse>.Failure(
                 Error.NotFound(
                     "JobProfile.NotFound",
                     $"Job Profile '{request.JobProfileId}' was not found."));
@@ -45,7 +47,7 @@ internal sealed class RegenerateJobProfileCommandHandler
 
         if (aiResult.IsFailure)
         {
-            return Result.Failure(aiResult.Error);
+            return Result<JobProfileResponse>.Failure(aiResult.Error);
         }
 
         jobProfile.UpdateGeneratedContent(
@@ -60,6 +62,17 @@ internal sealed class RegenerateJobProfileCommandHandler
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        return Result.Success();
+        var response = new JobProfileResponse(
+          jobProfile.Id,
+          jobProfile.OrganizationId,
+          jobProfile.CampaignId,
+          jobProfile.OriginalJobDescription,
+          jobProfile.GeneratedContent,
+          jobProfile.StructuredProfile,
+          jobProfile.Status,
+          jobProfile.GeneratedOn);
+
+        return Result<JobProfileResponse>.Success(
+            response);
     }
 }

@@ -36,6 +36,8 @@ public static class CreateJobProfileEndpoint
             cancellationToken);
 
         return result.ToCreatedResult(
-            $"/api/jobprofiles/{result.Value}");
+            result.Value is null
+                ? null
+                : $"/api/jobprofiles/{result.Value.Id}");
     }
 }

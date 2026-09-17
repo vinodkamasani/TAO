@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using TAO.Application.JobProfiles.Common;
 using TAO.SharedKernel.Results;
 
 namespace TAO.Application.JobProfiles.Create;
@@ -6,4 +7,4 @@ namespace TAO.Application.JobProfiles.Create;
 public sealed record CreateJobProfileCommand(
  Guid CampaignId,
  string OriginalJobDescription)
- : IRequest<Result<Guid>>;
+ : IRequest<Result<JobProfileResponse>>;

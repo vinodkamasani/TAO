@@ -9,7 +9,6 @@ public static class CreateHiringStrategyEndpoint
     public static RouteGroupBuilder MapCreateHiringStrategyEndpoint(
         this RouteGroupBuilder group)
     {
-
         group.MapPost(
                 "/{campaignId:guid}/hiring-strategy",
                 HandleAsync)
@@ -26,13 +25,15 @@ public static class CreateHiringStrategyEndpoint
         ISender sender,
         CancellationToken cancellationToken)
     {
-        var command = new CreateHiringStrategyCommand(campaignId);
+        var command = new CreateHiringStrategyCommand(
+            campaignId);
 
         var result = await sender.Send(
             command,
             cancellationToken);
 
-        return result.ToCreatedResult(
-            $"/api/hiringstrategies/{result.Value}");
+        return Results.Created(
+            $"/api/hiringstrategies/{result.Value.Id}",
+            result.Value);
     }
 }

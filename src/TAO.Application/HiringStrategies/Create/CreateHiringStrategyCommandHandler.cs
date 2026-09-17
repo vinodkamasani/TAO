@@ -9,7 +9,9 @@ using TAO.SharedKernel.Results;
 namespace TAO.Application.HiringStrategies.Create;
 
 internal sealed class CreateHiringStrategyCommandHandler
-    : IRequestHandler<CreateHiringStrategyCommand, Result<Guid>>
+    : IRequestHandler<
+        CreateHiringStrategyCommand,
+        Result<CreateHiringStrategyResponse>>
 {
     private readonly IApplicationDbContext _context;
     private readonly IHiringStrategyGenerator _hiringStrategyGenerator;
@@ -22,10 +24,14 @@ internal sealed class CreateHiringStrategyCommandHandler
         _hiringStrategyGenerator = hiringStrategyGenerator;
     }
 
-    public async Task<Result<Guid>> Handle(
+    public async Task<Result<CreateHiringStrategyResponse>> Handle(
         CreateHiringStrategyCommand request,
         CancellationToken cancellationToken)
     {
+        // ------------------------------------------------------------
+        // Load Campaign
+        // ------------------------------------------------------------
+
         var campaign = await _context
             .Set<Campaign>()
             .FirstOrDefaultAsync(
@@ -34,11 +40,15 @@ internal sealed class CreateHiringStrategyCommandHandler
 
         if (campaign is null)
         {
-            return Result<Guid>.Failure(
+            return Result<CreateHiringStrategyResponse>.Failure(
                 Error.NotFound(
                     "Campaign.NotFound",
                     $"Campaign '{request.CampaignId}' was not found."));
         }
+
+        // ------------------------------------------------------------
+        // Load Job Profile
+        // ------------------------------------------------------------
 
         var jobProfile = await _context
             .Set<JobProfile>()
@@ -46,23 +56,47 @@ internal sealed class CreateHiringStrategyCommandHandler
                 jp => jp.CampaignId == request.CampaignId,
                 cancellationToken);
 
-
         if (jobProfile is null)
         {
-            return Result<Guid>.Failure(
+            return Result<CreateHiringStrategyResponse>.Failure(
                 Error.NotFound(
                     "JobProfile.NotFound",
                     $"No Job Profile found for Campaign '{request.CampaignId}'."));
         }
 
+        // ------------------------------------------------------------
+        // Job Profile must be approved
+        // ------------------------------------------------------------
 
         if (jobProfile.Status != JobProfileStatus.Approved)
         {
-            return Result<Guid>.Failure(
+            return Result<CreateHiringStrategyResponse>.Failure(
                 Error.Validation(
                     "JobProfile.NotApproved",
                     "The Job Profile must be approved before generating a Hiring Strategy."));
         }
+
+        // ------------------------------------------------------------
+        // Check Existing Hiring Strategy
+        // ------------------------------------------------------------
+
+        var existingHiringStrategy = await _context
+            .Set<HiringStrategy>()
+            .AnyAsync(
+                hs => hs.CampaignId == request.CampaignId,
+                cancellationToken);
+
+        if (existingHiringStrategy)
+        {
+            return Result<CreateHiringStrategyResponse>.Failure(
+                Error.Conflict(
+                    "HiringStrategy.AlreadyExists",
+                    $"A Hiring Strategy already exists for Campaign '{request.CampaignId}'."));
+        }
+
+        // ------------------------------------------------------------
+        // Generate Hiring Strategy
+        // ------------------------------------------------------------
 
         var aiResult = await _hiringStrategyGenerator.GenerateAsync(
             jobProfile,
@@ -70,22 +104,13 @@ internal sealed class CreateHiringStrategyCommandHandler
 
         if (aiResult.IsFailure)
         {
-            return Result<Guid>.Failure(aiResult.Error);
+            return Result<CreateHiringStrategyResponse>.Failure(
+                aiResult.Error);
         }
 
-        var existingHiringStrategy = await _context
-                        .Set<HiringStrategy>()
-                        .AnyAsync(
-                            hs => hs.CampaignId == request.CampaignId,
-                            cancellationToken);
-
-                            if (existingHiringStrategy)
-                            {
-                                return Result<Guid>.Failure(
-                                    Error.Conflict(
-                                        "HiringStrategy.AlreadyExists",
-                                        $"A Hiring Strategy already exists for Campaign '{request.CampaignId}'."));
-                            }
+        // ------------------------------------------------------------
+        // Create Hiring Strategy
+        // ------------------------------------------------------------
 
         var hiringStrategy = HiringStrategy.Create(
             campaign.OrganizationId,
@@ -104,6 +129,19 @@ internal sealed class CreateHiringStrategyCommandHandler
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        return Result<Guid>.Success(hiringStrategy.Id);
+        // ------------------------------------------------------------
+        // Map to Response
+        // ------------------------------------------------------------
+
+        var response = new CreateHiringStrategyResponse(
+            hiringStrategy.Id,
+            hiringStrategy.OrganizationId,
+            hiringStrategy.CampaignId,
+            hiringStrategy.Content,
+            hiringStrategy.StructuredContent,
+            hiringStrategy.Status);
+
+        return Result<CreateHiringStrategyResponse>.Success(
+            response);
     }
 }
