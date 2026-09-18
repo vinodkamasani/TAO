@@ -30,4 +30,12 @@ public sealed record CampaignWorkflowStateResponse(
     int TotalResumes,
     int SuccessfulResumes,
     int FailedResumes,
-    DateTime? ResumeImportCompletedOn);
+    DateTime? ResumeImportCompletedOn,
+
+    // Candidate Screening Stage
+    bool HasCandidatesScreening,
+    DateTime? CandidatesScreeningCompletedOn,
+
+    // Invitations Stage
+    bool HasInvitations,
+    DateTime? InvitationsCompletedOn);

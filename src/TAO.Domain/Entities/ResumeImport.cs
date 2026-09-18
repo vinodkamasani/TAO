@@ -49,6 +49,8 @@ public sealed class ResumeImport : Entity
 
     public int FailedFiles { get; private set; }
 
+    public DateTime CompletedOn { get; private set;  }
+
     public void MarkProcessing()
     {
         Status = ResumeImportStatus.Processing;
@@ -67,11 +69,13 @@ public sealed class ResumeImport : Entity
     public void Complete()
     {
         Status = ResumeImportStatus.Completed;
+        CompletedOn = DateTime.UtcNow;
     }
 
     public void Fail()
     {
         Status = ResumeImportStatus.Failed;
+        CompletedOn = DateTime.UtcNow;
     }
 
 }
