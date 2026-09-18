@@ -1,4 +1,5 @@
-﻿using TAO.Api.Endpoints.CandidateApplications.SendRecommendedEmails;
+﻿using TAO.Api.Endpoints.CandidateApplications.Get;
+using TAO.Api.Endpoints.CandidateApplications.SendRecommendedEmails;
 
 public static class CandidateApplicationEndpoints
 {
@@ -10,6 +11,7 @@ public static class CandidateApplicationEndpoints
             .WithTags("Candidate Applications");
 
         group.MapSendRecommendedEmailsEndpoint();
+        group.MapGetCandidateApplicationsEndpoint();
 
         return group;
     }
