@@ -49,7 +49,7 @@ public sealed class ResumeImport : Entity
 
     public int FailedFiles { get; private set; }
 
-    public DateTime CompletedOn { get; private set;  }
+    public DateTime? CompletedOn { get; private set;  }
 
     public void MarkProcessing()
     {

@@ -30,6 +30,9 @@ public sealed class ResumeImportConfiguration : IEntityTypeConfiguration<ResumeI
         builder.Property(x => x.FailedFiles)
             .IsRequired();
 
+        builder.Property(x => x.CompletedOn)
+    .HasColumnType("datetime2(7)");
+
         builder.Property(x => x.Status)
             .HasConversion<byte>()
             .IsRequired();
