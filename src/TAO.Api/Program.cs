@@ -21,6 +21,7 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddAiServices(builder.Configuration);
+builder.Services.AddAuthorization();
 
 // CORS Configuration
 builder.Services.AddCors(options =>
@@ -66,6 +67,9 @@ else
 {
     app.UseCors("AllowAll"); // Consider using a more restrictive policy for production
 }
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapEndpoints();
 

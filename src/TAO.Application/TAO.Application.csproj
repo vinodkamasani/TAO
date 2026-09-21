@@ -7,6 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Common\Exceptions\**" />
+    <Compile Remove="Common\Models\**" />
+    <Compile Remove="Common\Results\**" />
+    <EmbeddedResource Remove="Common\Exceptions\**" />
+    <EmbeddedResource Remove="Common\Models\**" />
+    <EmbeddedResource Remove="Common\Results\**" />
+    <None Remove="Common\Exceptions\**" />
+    <None Remove="Common\Models\**" />
+    <None Remove="Common\Results\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <PackageReference Include="MediatR" Version="14.2.0" />
@@ -19,12 +31,6 @@
     <ProjectReference Include="..\TAO.AI\TAO.AI.csproj" />
     <ProjectReference Include="..\TAO.Domain\TAO.Domain.csproj" />
     <ProjectReference Include="..\TAO.SharedKernel\TAO.SharedKernel.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Common\Exceptions\" />
-    <Folder Include="Common\Models\" />
-    <Folder Include="Common\Results\" />
   </ItemGroup>
 
 </Project>
