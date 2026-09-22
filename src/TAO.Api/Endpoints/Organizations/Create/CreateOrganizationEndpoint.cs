@@ -33,6 +33,12 @@ public static class CreateOrganizationEndpoint
 
         var result = await sender.Send(command, cancellationToken);
 
+        if (result.IsFailure)
+        {
+            // Use the error's ToString() to include something useful; adjust status code as appropriate.
+            return Results.Problem(detail: result.Error?.ToString(), statusCode: 400);
+        }
+
         return result.ToCreatedResult(
       $"/api/organizations/{result.Value}");
     }

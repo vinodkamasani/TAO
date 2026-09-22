@@ -21,6 +21,12 @@ public static class GenerateAssessmentQuestionEndpoint
                             assessmentSessionId),
                         cancellationToken);
 
+                    if (result.IsFailure)
+                    {
+                        // Use the error's ToString() to include something useful; adjust status code as appropriate.
+                        return Results.Problem(detail: result.Error?.ToString(), statusCode: 400);
+                    }
+
                     return result.ToCreatedResult(
                         $"/api/assessment-questions/{result.Value.QuestionId}");
                 })

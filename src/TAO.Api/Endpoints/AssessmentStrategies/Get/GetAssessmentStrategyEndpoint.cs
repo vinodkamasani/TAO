@@ -32,6 +32,12 @@ public static class GetAssessmentStrategyEndpoint
             query,
             cancellationToken);
 
+        if (result.IsFailure)
+        {
+            return Results.Problem(
+                result.Error?.Message ?? String.Empty);
+        }
+
         return result.ToOkResult();
     }
 }

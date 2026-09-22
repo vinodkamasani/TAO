@@ -42,6 +42,12 @@ public static class CreateUserEndpoint
             command,
             cancellationToken);
 
+        if (result.IsFailure)
+        {
+            // Use the error's ToString() to include something useful; adjust status code as appropriate.
+            return Results.Problem(detail: result.Error?.ToString(), statusCode: 400);
+        }
+
         return Results.Created(
             $"/api/users/{result.Value.Id}",
             result.Value);

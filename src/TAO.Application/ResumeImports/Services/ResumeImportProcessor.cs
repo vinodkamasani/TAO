@@ -138,11 +138,6 @@ internal sealed class ResumeImportProcessor : IResumeImportProcessor
             parsingResult,
             cancellationToken);
 
-        await ReplaceResumeScreeningAsync(
-            resumeImport,
-            application,
-            parsingResult,
-            cancellationToken);
     }
 
 
@@ -198,35 +193,5 @@ internal sealed class ResumeImportProcessor : IResumeImportProcessor
         _context.Set<ResumeProfile>().Add(profile);
     }
 
-    private async Task ReplaceResumeScreeningAsync(
-    ResumeImport resumeImport,
-    CandidateApplication application,
-    ResumeParsingResult parsingResult,
-    CancellationToken cancellationToken)
-    {
-        var existingScreening = await _context.Set<ResumeScreening>()
-            .FirstOrDefaultAsync(
-                x => x.ApplicationId == application.Id,
-                cancellationToken);
-
-        if (existingScreening is not null)
-        {
-            _context.Set<ResumeScreening>().Remove(existingScreening);
-        }
-
-        var screening = ResumeScreening.Create(
-            organizationId: resumeImport.OrganizationId,
-            applicationId: application.Id,
-            content: MarkdownContent.Create(
-                parsingResult.RawResponse),
-            structuredContent: StructuredContent.Create(
-                parsingResult.StructuredContent));
-
-        _context.Set<ResumeScreening>().Add(screening);
-    }
-
-    public Task<Result> ProcessAsync(Guid resumeImportId, IReadOnlyCollection<UploadedResume> resumes, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
+ 
 }

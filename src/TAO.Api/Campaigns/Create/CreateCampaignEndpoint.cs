@@ -34,6 +34,12 @@ public static class CreateCampaignEndpoint
             command,
             cancellationToken);
 
+        if (result.IsFailure)
+        {
+            return Results.Problem(
+                result.Error?.Message ?? String.Empty);
+        }
+
         return result.ToCreatedResult(
             $"/api/campaigns/{result.Value}");
     }

@@ -32,6 +32,12 @@ public static class CreateHiringStrategyEndpoint
             command,
             cancellationToken);
 
+        if (result.IsFailure)
+        {
+            return Results.Problem(
+                result.Error?.Message ?? String.Empty);
+        }
+
         return Results.Created(
             $"/api/hiringstrategies/{result.Value.Id}",
             result.Value);

@@ -35,9 +35,9 @@ public static class RecordCodeResponseEndpoint
 
         if (result.IsFailure)
         {
-            return result.ToNoContentResult();
+            return Results.Problem(
+                result.Error?.Message ?? String.Empty);
         }
-
         return Results.Ok(result.Value);
     }
 }

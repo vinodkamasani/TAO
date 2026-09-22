@@ -63,6 +63,12 @@ public static class CreateResumeImportEndpoint
             command,
             cancellationToken);
 
+        if (result.IsFailure)
+        {
+            return Results.Problem(
+                result.Error?.Message ?? String.Empty);
+        }
+
         return result.ToCreatedResult(
             $"/api/resumeimports/{result.Value}");
     }

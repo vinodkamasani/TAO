@@ -30,6 +30,12 @@ public static class GetUsersEndpoint
             new GetUsersQuery(),
             cancellationToken);
 
+
+        if (result.IsFailure)
+        {
+            // Use the error's ToString() to include something useful; adjust status code as appropriate.
+            return Results.Problem(detail: result.Error?.ToString(), statusCode: 400);
+        }
         return result.ToOkResult();
     }
 }

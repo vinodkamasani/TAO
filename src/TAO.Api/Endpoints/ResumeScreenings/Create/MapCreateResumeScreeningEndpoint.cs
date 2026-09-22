@@ -32,6 +32,12 @@ public static class CreateResumeScreeningEndpoint
             command,
             cancellationToken);
 
+        if (result.IsFailure)
+        {
+            return Results.Problem(
+                result.Error?.Message ?? String.Empty);
+        }
+
         return result.ToCreatedResult(
             id => $"/api/resumescreenings/{id}");
     }
