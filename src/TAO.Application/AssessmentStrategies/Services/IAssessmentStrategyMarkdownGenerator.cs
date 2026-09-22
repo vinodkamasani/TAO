@@ -6,5 +6,5 @@ namespace TAO.Application.AssessmentStrategies.Services;
 public interface IAssessmentStrategyMarkdownGenerator
 {
     MarkdownContent Generate(
-        AssessmentStrategyGenerationResult generationResult);
+        AssessmentStrategyAiResponse structuredContent);
 }

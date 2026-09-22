@@ -173,8 +173,8 @@ internal sealed class CreateAssessmentStrategyCommandHandler
         // ------------------------------------------------------------
 
         var markdownContent =
-            _markdownGenerator.Generate(
-                aiResult.Value);
+       _markdownGenerator.Generate(
+           structuredResponse);
 
         // ------------------------------------------------------------
         // Create Assessment Strategy

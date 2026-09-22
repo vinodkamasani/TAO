@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using System.Text.Json;
 using TAO.AI.AssessmentStrategies.Contracts;
 using TAO.Domain.ValueObjects;
 
@@ -9,23 +8,15 @@ internal sealed class AssessmentStrategyMarkdownGenerator
     : IAssessmentStrategyMarkdownGenerator
 {
     public MarkdownContent Generate(
-        AssessmentStrategyGenerationResult generationResult)
+        AssessmentStrategyAiResponse structuredContent)
     {
-        ArgumentNullException.ThrowIfNull(generationResult);
-
-        var structuredContent =
-            JsonSerializer.Deserialize<AssessmentStrategyAiResponse>(
-                generationResult.StructuredContent.Value,
-                new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                })
-            ?? throw new InvalidOperationException(
-                "Unable to deserialize Assessment Strategy structured content.");
+        ArgumentNullException.ThrowIfNull(structuredContent);
 
         var builder = new StringBuilder();
 
-        builder.AppendLine($"# {structuredContent.AssessmentName}");
+        builder.AppendLine(
+            $"# {structuredContent.AssessmentName}");
+
         builder.AppendLine();
 
         builder.AppendLine("## Assessment Overview");

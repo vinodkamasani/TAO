@@ -90,4 +90,48 @@ public sealed class AssessmentRound : Entity
             targetQuestionCount,
             competencies);
     }
+
+    public void Update(
+    int order,
+    AssessmentRoundType type,
+    AssessmentDifficulty difficulty,
+    int durationInMinutes,
+    int targetQuestionCount)
+    {
+        if (order <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(order),
+                "Round order must be greater than zero.");
+        }
+
+        if (durationInMinutes <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(durationInMinutes),
+                "Round duration must be greater than zero.");
+        }
+
+        if (targetQuestionCount <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(targetQuestionCount),
+                "Target question count must be greater than zero.");
+        }
+
+        Order = order;
+        Type = type;
+        Difficulty = difficulty;
+        DurationInMinutes = durationInMinutes;
+        TargetQuestionCount = targetQuestionCount;
+    }
+
+    public void ReplaceCompetencies(
+    IReadOnlyCollection<AssessmentRoundCompetency> competencies)
+    {
+        ArgumentNullException.ThrowIfNull(competencies);
+
+        _competencies.Clear();
+        _competencies.AddRange(competencies);
+    }
 }
