@@ -59,7 +59,12 @@ public static class UpdateAssessmentStrategyEndpoint
             command,
             cancellationToken);
 
-       
+
+        if (result.IsFailure)
+        {
+            return Results.Problem(
+                result.Error?.Message ?? String.Empty);
+        }
         return Results.Ok(result.Value);
     }
 }

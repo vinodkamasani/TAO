@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using TAO.Application.AssessmentStrategies.Create;
+using TAO.SharedKernel.Results;
 
 namespace TAO.Api.Endpoints.AssessmentStrategies.Create;
 
@@ -40,6 +41,12 @@ public static class CreateAssessmentStrategyEndpoint
         var result = await sender.Send(
             command,
             cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return Results.Problem(
+                result.Error?.Message?? String.Empty);
+        }
 
         return Results.Created(
             $"/api/campaigns/{campaignId}/assessment-strategy",
