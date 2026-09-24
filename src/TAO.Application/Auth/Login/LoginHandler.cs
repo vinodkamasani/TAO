@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using TAO.Application.Auth.Contracts;
 using TAO.Application.Common.Interfaces;
 using TAO.Domain.Entities;
 using TAO.Domain.Enums;
@@ -10,9 +11,9 @@ namespace TAO.Application.Auth.Login;
 public sealed class LoginHandler(
     IAuthenticationService authenticationService,
     IApplicationDbContext dbContext)
-    : IRequestHandler<LoginCommand, Result<LoginResponse>>
+    : IRequestHandler<LoginCommand, Result<UserResponse>>
 {
-    public async Task<Result<LoginResponse>> Handle(
+    public async Task<Result<UserResponse>> Handle(
         LoginCommand request,
         CancellationToken cancellationToken)
     {
@@ -29,7 +30,7 @@ public sealed class LoginHandler(
 
         if (user is null)
         {
-            return Result<LoginResponse>.Failure(
+            return Result<UserResponse>.Failure(
                 new Error(
                     "Auth.InvalidCredentials",
                     "Invalid email or password."));
@@ -37,7 +38,7 @@ public sealed class LoginHandler(
 
         if (user.Status != UserStatus.Active)
         {
-            return Result<LoginResponse>.Failure(
+            return Result<UserResponse>.Failure(
                 new Error(
                     "Auth.UserInactive",
                     "The user account is inactive."));
@@ -51,13 +52,13 @@ public sealed class LoginHandler(
 
         if (!authenticated)
         {
-            return Result<LoginResponse>.Failure(
+            return Result<UserResponse>.Failure(
                 new Error(
                     "Auth.InvalidCredentials",
                     "Invalid email or password."));
         }
 
-        var response = new LoginResponse(
+        var response = new UserResponse(
             user.Id,
             user.OrganizationId,
             user.FirstName,
@@ -66,6 +67,6 @@ public sealed class LoginHandler(
             user.Role.ToString(),
             user.Status.ToString());
 
-        return Result<LoginResponse>.Success(response);
+        return Result<UserResponse>.Success(response);
     }
 }

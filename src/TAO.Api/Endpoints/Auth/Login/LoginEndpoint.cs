@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TAO.Api.Extensions;
+using TAO.Application.Auth.Contracts;
 using TAO.Application.Auth.Login;
 
 namespace TAO.Api.Endpoints.Auth.Login;
@@ -18,7 +19,7 @@ public static class LoginEndpoint
             .WithSummary("Authenticates a user.")
             .WithDescription(
                 "Authenticates a TAO user and creates an authentication session.")
-            .Produces<LoginResponse>(StatusCodes.Status200OK)
+            .Produces<UserResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 

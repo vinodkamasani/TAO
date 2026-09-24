@@ -1,7 +1,7 @@
-﻿namespace TAO.Application.Auth.Login;
+﻿namespace TAO.Application.Auth.Contracts;
 
-public sealed record LoginResponse(
-    Guid UserId,
+public sealed record UserResponse(
+    Guid Id,
     Guid OrganizationId,
     string FirstName,
     string LastName,

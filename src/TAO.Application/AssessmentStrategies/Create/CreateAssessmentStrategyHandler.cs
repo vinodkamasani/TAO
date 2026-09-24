@@ -1,8 +1,9 @@
-﻿using System.Text.Json;
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 using TAO.AI.Abstractions;
 using TAO.AI.AssessmentStrategies.Contracts;
+using TAO.Application.AssessmentStrategies.Contracts;
 using TAO.Application.AssessmentStrategies.Services;
 using TAO.Application.Common.Interfaces;
 using TAO.Domain.Entities;
@@ -16,7 +17,7 @@ namespace TAO.Application.AssessmentStrategies.Create;
 internal sealed class CreateAssessmentStrategyCommandHandler
     : IRequestHandler<
         CreateAssessmentStrategyCommand,
-        Result<CreateAssessmentStrategyResponse>>
+        Result<AssessmentStrategyResponse>>
 {
     private readonly IApplicationDbContext _context;
     private readonly IAssessmentStrategyGenerator _assessmentStrategyGenerator;
@@ -32,7 +33,7 @@ internal sealed class CreateAssessmentStrategyCommandHandler
         _markdownGenerator = assessmentStrategyMarkdownGenerator;
     }
 
-    public async Task<Result<CreateAssessmentStrategyResponse>> Handle(
+    public async Task<Result<AssessmentStrategyResponse>> Handle(
         CreateAssessmentStrategyCommand request,
         CancellationToken cancellationToken)
     {
@@ -48,7 +49,7 @@ internal sealed class CreateAssessmentStrategyCommandHandler
 
         if (campaign is null)
         {
-            return Result<CreateAssessmentStrategyResponse>.Failure(
+            return Result<AssessmentStrategyResponse>.Failure(
                 Error.NotFound(
                     "Campaign.NotFound",
                     $"Campaign '{request.CampaignId}' was not found."));
@@ -66,7 +67,7 @@ internal sealed class CreateAssessmentStrategyCommandHandler
 
         if (jobProfile is null)
         {
-            return Result<CreateAssessmentStrategyResponse>.Failure(
+            return Result<AssessmentStrategyResponse>.Failure(
                 Error.NotFound(
                     "JobProfile.NotFound",
                     $"No Job Profile found for Campaign '{request.CampaignId}'."));
@@ -78,7 +79,7 @@ internal sealed class CreateAssessmentStrategyCommandHandler
 
         if (jobProfile.Status != JobProfileStatus.Approved)
         {
-            return Result<CreateAssessmentStrategyResponse>.Failure(
+            return Result<AssessmentStrategyResponse>.Failure(
                 Error.Validation(
                     "JobProfile.NotApproved",
                     "The Job Profile must be approved before generating an Assessment Strategy."));
@@ -96,7 +97,7 @@ internal sealed class CreateAssessmentStrategyCommandHandler
 
         if (hiringStrategy is null)
         {
-            return Result<CreateAssessmentStrategyResponse>.Failure(
+            return Result<AssessmentStrategyResponse>.Failure(
                 Error.NotFound(
                     "HiringStrategy.NotFound",
                     $"No Hiring Strategy found for Campaign '{request.CampaignId}'."));
@@ -108,7 +109,7 @@ internal sealed class CreateAssessmentStrategyCommandHandler
 
         if (hiringStrategy.Status != HiringStrategyStatus.Approved)
         {
-            return Result<CreateAssessmentStrategyResponse>.Failure(
+            return Result<AssessmentStrategyResponse>.Failure(
                 Error.Validation(
                     "HiringStrategy.NotApproved",
                     "The Hiring Strategy must be approved before generating an Assessment Strategy."));
@@ -126,7 +127,7 @@ internal sealed class CreateAssessmentStrategyCommandHandler
 
         if (existingAssessmentStrategy)
         {
-            return Result<CreateAssessmentStrategyResponse>.Failure(
+            return Result<AssessmentStrategyResponse>.Failure(
                 Error.Conflict(
                     "AssessmentStrategy.AlreadyExists",
                     $"An Assessment Strategy already exists for Campaign '{request.CampaignId}'."));
@@ -144,7 +145,7 @@ internal sealed class CreateAssessmentStrategyCommandHandler
 
         if (aiResult.IsFailure)
         {
-            return Result<CreateAssessmentStrategyResponse>.Failure(
+            return Result<AssessmentStrategyResponse>.Failure(
                 aiResult.Error);
         }
 
@@ -162,7 +163,7 @@ internal sealed class CreateAssessmentStrategyCommandHandler
 
         if (structuredResponse is null)
         {
-            return Result<CreateAssessmentStrategyResponse>.Failure(
+            return Result<AssessmentStrategyResponse>.Failure(
                 Error.Validation(
                     "AssessmentStrategy.InvalidResponse",
                     "The generated Assessment Strategy could not be processed."));
@@ -243,35 +244,35 @@ internal sealed class CreateAssessmentStrategyCommandHandler
         // Map to Response
         // ------------------------------------------------------------
 
-        var response = new CreateAssessmentStrategyResponse(
-            assessmentStrategy.Id,
-            assessmentStrategy.OrganizationId,
-            assessmentStrategy.CampaignId,
-            assessmentStrategy.AssessmentName,
-            assessmentStrategy.Content,
-            assessmentStrategy.StructuredContent,
-            assessmentStrategy.Status,
-            assessmentStrategy.GeneratedOn,
-            assessmentRounds
-                .OrderBy(x => x.Order)
-                .Select(x =>
-                   new CreateAssessmentRoundResponse(
-                    x.Id,
-                    x.Order,
-                    x.Type.ToString(),
-                    x.Difficulty.ToString(),
-                    x.DurationInMinutes,
-                    x.TargetQuestionCount,
-                    x.Competencies
-                        .Select(c =>
-                            new CreateAssessmentRoundCompetencyResponse(
-                                c.Name,
-                                c.Priority.ToString(),
-                                c.MinimumPassPercentage))
-                        .ToList()))
-                .ToList());
+        var response = new AssessmentStrategyResponse(
+     assessmentStrategy.Id,
+     assessmentStrategy.OrganizationId,
+     assessmentStrategy.CampaignId,
+     assessmentStrategy.AssessmentName,
+     assessmentStrategy.Content,
+     assessmentStrategy.StructuredContent,
+     assessmentStrategy.Status.ToString(),
+     assessmentStrategy.GeneratedOn,
+     assessmentRounds
+         .OrderBy(x => x.Order)
+         .Select(x =>
+             new AssessmentRoundResponse(
+                 x.Id,
+                 x.Order,
+                 x.Type.ToString(),
+                 x.Difficulty.ToString(),
+                 x.DurationInMinutes,
+                 x.TargetQuestionCount,
+                 x.Competencies
+                     .Select(c =>
+                         new AssessmentCompetencyResponse(
+                             c.Name,
+                             c.Priority.ToString(),
+                             c.MinimumPassPercentage))
+                     .ToList()))
+         .ToList());
 
-        return Result<CreateAssessmentStrategyResponse>.Success(
+        return Result<AssessmentStrategyResponse>.Success(
             response);
     }
 }

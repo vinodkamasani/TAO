@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using TAO.Application.Auth.Contracts;
 using TAO.Application.Common.Interfaces;
 using TAO.Domain.Entities;
 using TAO.SharedKernel.Results;
@@ -11,16 +12,16 @@ public sealed class GetCurrentUserHandler(
     IApplicationDbContext dbContext)
     : IRequestHandler<
         GetCurrentUserQuery,
-        Result<GetCurrentUserResponse>>
+        Result<UserResponse>>
 {
-    public async Task<Result<GetCurrentUserResponse>> Handle(
+    public async Task<Result<UserResponse>> Handle(
         GetCurrentUserQuery request,
         CancellationToken cancellationToken)
     {
         if (!currentUser.IsAuthenticated ||
             currentUser.UserId is null)
         {
-            return Result<GetCurrentUserResponse>.Failure(
+            return Result<UserResponse>.Failure(
                 new Error(
                     "Auth.Unauthorized",
                     "The current user is not authenticated."));
@@ -35,20 +36,20 @@ public sealed class GetCurrentUserHandler(
 
         if (user is null)
         {
-            return Result<GetCurrentUserResponse>.Failure(
+            return Result<UserResponse>.Failure(
                 new Error(
                     "Auth.UserNotFound",
                     "The authenticated user could not be found."));
         }
 
-        return Result<GetCurrentUserResponse>.Success(
-            new GetCurrentUserResponse(
-                user.Id,
-                user.OrganizationId,
-                user.FirstName,
-                user.LastName,
-                user.Email,
-                user.Role,
-                user.Status));
+        return Result<UserResponse>.Success(
+     new UserResponse(
+         user.Id,
+         user.OrganizationId,
+         user.FirstName,
+         user.LastName,
+         user.Email,
+         user.Role.ToString(),
+         user.Status.ToString()));
     }
 }

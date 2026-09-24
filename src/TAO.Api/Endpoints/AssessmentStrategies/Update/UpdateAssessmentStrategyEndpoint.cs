@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using TAO.Application.AssessmentStrategies.Contracts;
 using TAO.Application.AssessmentStrategies.Update;
 
 namespace TAO.Api.Endpoints.AssessmentStrategies.Update;
@@ -17,7 +18,7 @@ public static class UpdateAssessmentStrategyEndpoint
             .WithName("UpdateAssessmentStrategy")
             .WithSummary(
                 "Updates an Assessment Strategy.")
-            .Produces<UpdateAssessmentStrategyResponse>(
+            .Produces<AssessmentStrategyResponse>(
                 StatusCodes.Status200OK)
             .ProducesProblem(
                 StatusCodes.Status400BadRequest)

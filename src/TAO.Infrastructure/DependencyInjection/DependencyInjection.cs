@@ -82,6 +82,10 @@ public static class DependencyInjection
         services.AddScoped<ITransactionManager, EfTransactionManager>();
         services.AddScoped<IAuthenticationService, AuthenticationService>();
 
+        services.AddScoped<
+    IUserClaimsPrincipalFactory<ApplicationUser>,
+    TaoUserClaimsPrincipalFactory>();
+
         return services;
     }
 }

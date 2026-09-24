@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using TAO.Application.AssessmentStrategies.Contracts;
 using TAO.Application.AssessmentStrategies.Create;
 using TAO.SharedKernel.Results;
 
@@ -17,7 +18,7 @@ public static class CreateAssessmentStrategyEndpoint
                 "Generates an assessment strategy for a campaign.")
             .WithDescription(
                 "Generates an AI-suggested assessment strategy using the approved Job Profile and Hiring Strategy.")
-            .Produces<CreateAssessmentStrategyResponse>(
+            .Produces<AssessmentStrategyResponse>(
                 StatusCodes.Status201Created)
             .ProducesValidationProblem(
                 StatusCodes.Status400BadRequest)

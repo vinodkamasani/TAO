@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using TAO.Application.Auth.Contracts;
 using TAO.Application.Auth.Me;
 
 namespace TAO.Api.Endpoints.Auth.Me;
@@ -14,7 +15,7 @@ public static class GetCurrentUserEndpoint
             .RequireAuthorization()
             .WithName("GetCurrentUser")
             .WithSummary("Gets the current authenticated user.")
-            .Produces<GetCurrentUserResponse>(StatusCodes.Status200OK)
+            .Produces<UserResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         return app;

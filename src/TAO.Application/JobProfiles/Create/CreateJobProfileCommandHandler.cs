@@ -73,8 +73,8 @@ internal sealed class CreateJobProfileCommandHandler
          jobProfile.OrganizationId,
          jobProfile.CampaignId,
          jobProfile.OriginalJobDescription,
-         jobProfile.GeneratedContent,
-         jobProfile.StructuredProfile,
+         jobProfile.GeneratedContent.Value,
+         jobProfile.StructuredProfile.Value,
          jobProfile.Status,
          jobProfile.GeneratedOn);
 

@@ -16,24 +16,44 @@ internal sealed class EvaluateAssessmentCommandHandler
 
     private readonly IApplicationDbContext _context;
     private readonly IAssessmentEvaluationGenerator _generator;
+    private readonly ICurrentUser _currentUser;
 
     public EvaluateAssessmentCommandHandler(
         IApplicationDbContext context,
-        IAssessmentEvaluationGenerator generator)
+        IAssessmentEvaluationGenerator generator,
+        ICurrentUser currentUser)
     {
         _context = context;
         _generator = generator;
+        _currentUser = currentUser;
     }
 
     public async Task<Result> Handle(
         EvaluateAssessmentCommand request,
         CancellationToken cancellationToken)
     {
-        var session = await _context
-            .Set<AssessmentSession>()
-            .FirstOrDefaultAsync(
-                x => x.Id == request.AssessmentSessionId,
-                cancellationToken);
+
+        if (!_currentUser.IsAuthenticated ||
+            _currentUser.UserId is null ||
+            _currentUser.OrganizationId is null)
+        {
+            return Result.Failure(
+                Error.Unauthorized(
+                    "AssessmentEvaluation.Unauthorized",
+                    "The current user is not authenticated."));
+        }
+
+        var organizationId = _currentUser.OrganizationId.Value;
+
+        var session = await (
+    from sessions in _context.Set<AssessmentSession>()
+    join application in _context.Set<CandidateApplication>()
+        on sessions.CandidateApplicationId equals application.Id
+    where sessions.Id == request.AssessmentSessionId
+          && application.OrganizationId == organizationId
+    select sessions)
+    .FirstOrDefaultAsync(cancellationToken);
+
 
         if (session is null)
         {

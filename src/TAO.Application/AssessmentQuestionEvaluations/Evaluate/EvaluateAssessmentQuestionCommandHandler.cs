@@ -14,10 +14,12 @@ internal sealed class EvaluateAssessmentQuestionCommandHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IAssessmentQuestionEvaluationGenerator _generator;
+    private readonly ICurrentUser _currentUser;
 
     public EvaluateAssessmentQuestionCommandHandler(
         IApplicationDbContext context,
-        IAssessmentQuestionEvaluationGenerator generator)
+        IAssessmentQuestionEvaluationGenerator generator,
+        ICurrentUser current)
     {
         _context = context;
         _generator = generator;

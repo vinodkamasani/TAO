@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using TAO.Application.AssessmentStrategies.Contracts;
 using TAO.SharedKernel.Results;
 
 namespace TAO.Application.AssessmentStrategies.Update;
@@ -7,7 +8,7 @@ public sealed record UpdateAssessmentStrategyCommand(
     Guid AssessmentStrategyId,
     string AssessmentName,
     IReadOnlyCollection<UpdateAssessmentRoundCommand> Rounds)
-    : IRequest<Result<UpdateAssessmentStrategyResponse>>;
+    : IRequest<Result<AssessmentStrategyResponse>>;
 
 public sealed record UpdateAssessmentRoundCommand(
     int Order,

@@ -1,7 +1,8 @@
-﻿using System.Text.Json;
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 using TAO.AI.AssessmentStrategies.Contracts;
+using TAO.Application.AssessmentStrategies.Contracts;
 using TAO.Application.AssessmentStrategies.Services;
 using TAO.Application.Common.Interfaces;
 using TAO.Domain.Entities;
@@ -17,46 +18,35 @@ public sealed class UpdateAssessmentStrategyCommandHandler(
     IAssessmentStrategyMarkdownGenerator markdownGenerator)
     : IRequestHandler<
         UpdateAssessmentStrategyCommand,
-        Result<UpdateAssessmentStrategyResponse>>
+        Result<AssessmentStrategyResponse>>
 {
-    public async Task<Result<UpdateAssessmentStrategyResponse>> Handle(
+    public async Task<Result<AssessmentStrategyResponse>> Handle(
         UpdateAssessmentStrategyCommand request,
         CancellationToken cancellationToken)
     {
         if (!currentUser.IsAuthenticated ||
-            currentUser.UserId is null)
+     currentUser.UserId is null ||
+     currentUser.OrganizationId is null)
         {
-            return Result<UpdateAssessmentStrategyResponse>.Failure(
+            return Result<AssessmentStrategyResponse>.Failure(
                 Error.Unauthorized(
                     "AssessmentStrategy.Unauthorized",
                     "The current user is not authenticated."));
         }
 
-        var organizationId = await context
-            .Set<User>()
-            .Where(x => x.Id == currentUser.UserId.Value)
-            .Select(x => (Guid?)x.OrganizationId)
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (organizationId is null)
-        {
-            return Result<UpdateAssessmentStrategyResponse>.Failure(
-                Error.NotFound(
-                    "User.NotFound",
-                    "The current user could not be found."));
-        }
+        var organizationId = currentUser.OrganizationId.Value;
 
         var assessmentStrategy = await context
             .Set<AssessmentStrategy>()
             .FirstOrDefaultAsync(
                 x =>
                     x.Id == request.AssessmentStrategyId &&
-                    x.OrganizationId == organizationId.Value,
+                    x.OrganizationId == organizationId,
                 cancellationToken);
 
         if (assessmentStrategy is null)
         {
-            return Result<UpdateAssessmentStrategyResponse>.Failure(
+            return Result<AssessmentStrategyResponse>.Failure(
                 Error.NotFound(
                     "AssessmentStrategy.NotFound",
                     "The Assessment Strategy was not found."));
@@ -65,7 +55,7 @@ public sealed class UpdateAssessmentStrategyCommandHandler(
         if (assessmentStrategy.Status ==
             AssessmentStrategyStatus.Approved)
         {
-            return Result<UpdateAssessmentStrategyResponse>.Failure(
+            return Result<AssessmentStrategyResponse>.Failure(
                 Error.Validation(
                     "AssessmentStrategy.AlreadyApproved",
                     "An approved Assessment Strategy cannot be modified."));
@@ -126,7 +116,7 @@ public sealed class UpdateAssessmentStrategyCommandHandler(
                 x.AssessmentStrategyId ==
                 assessmentStrategy.Id)
             .OrderBy(x => x.Order)
-            .Select(x => new UpdateAssessmentRoundResponse(
+            .Select(x => new AssessmentRoundResponse(
                 x.Id,
                 x.Order,
                 x.Type.ToString(),
@@ -135,24 +125,24 @@ public sealed class UpdateAssessmentStrategyCommandHandler(
                 x.TargetQuestionCount,
                 x.Competencies
                     .Select(c =>
-                        new UpdateAssessmentCompetencyResponse(
+                        new AssessmentCompetencyResponse(
                             c.Name,
                             c.Priority,
                             c.MinimumPassPercentage))
                     .ToList()))
             .ToListAsync(cancellationToken);
 
-        return Result<UpdateAssessmentStrategyResponse>.Success(
-            new UpdateAssessmentStrategyResponse(
-                assessmentStrategy.Id,
-                assessmentStrategy.OrganizationId,
-                assessmentStrategy.CampaignId,
-                assessmentStrategy.AssessmentName,
-                assessmentStrategy.Content,
-                assessmentStrategy.StructuredContent,
-                assessmentStrategy.Status,
-                assessmentStrategy.GeneratedOn,
-                rounds));
+        return Result<AssessmentStrategyResponse>.Success(
+     new AssessmentStrategyResponse(
+         assessmentStrategy.Id,
+         assessmentStrategy.OrganizationId,
+         assessmentStrategy.CampaignId,
+         assessmentStrategy.AssessmentName,
+         assessmentStrategy.Content,
+         assessmentStrategy.StructuredContent,
+         assessmentStrategy.Status.ToString(),
+         assessmentStrategy.GeneratedOn,
+         rounds));
     }
 
     private async Task SynchronizeRoundsAsync(

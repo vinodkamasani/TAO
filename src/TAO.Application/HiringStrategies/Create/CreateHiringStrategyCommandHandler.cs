@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using TAO.AI.Abstractions;
 using TAO.Application.Common.Interfaces;
+using TAO.Application.HiringStrategies.Contracts;
 using TAO.Domain.Entities;
 using TAO.Domain.Enums;
 using TAO.SharedKernel.Results;
@@ -11,7 +12,7 @@ namespace TAO.Application.HiringStrategies.Create;
 internal sealed class CreateHiringStrategyCommandHandler
     : IRequestHandler<
         CreateHiringStrategyCommand,
-        Result<CreateHiringStrategyResponse>>
+        Result<HiringStrategyResponse>>
 {
     private readonly IApplicationDbContext _context;
     private readonly IHiringStrategyGenerator _hiringStrategyGenerator;
@@ -24,7 +25,7 @@ internal sealed class CreateHiringStrategyCommandHandler
         _hiringStrategyGenerator = hiringStrategyGenerator;
     }
 
-    public async Task<Result<CreateHiringStrategyResponse>> Handle(
+    public async Task<Result<HiringStrategyResponse>> Handle(
         CreateHiringStrategyCommand request,
         CancellationToken cancellationToken)
     {
@@ -40,7 +41,7 @@ internal sealed class CreateHiringStrategyCommandHandler
 
         if (campaign is null)
         {
-            return Result<CreateHiringStrategyResponse>.Failure(
+            return Result<HiringStrategyResponse>.Failure(
                 Error.NotFound(
                     "Campaign.NotFound",
                     $"Campaign '{request.CampaignId}' was not found."));
@@ -58,7 +59,7 @@ internal sealed class CreateHiringStrategyCommandHandler
 
         if (jobProfile is null)
         {
-            return Result<CreateHiringStrategyResponse>.Failure(
+            return Result<HiringStrategyResponse>.Failure(
                 Error.NotFound(
                     "JobProfile.NotFound",
                     $"No Job Profile found for Campaign '{request.CampaignId}'."));
@@ -70,7 +71,7 @@ internal sealed class CreateHiringStrategyCommandHandler
 
         if (jobProfile.Status != JobProfileStatus.Approved)
         {
-            return Result<CreateHiringStrategyResponse>.Failure(
+            return Result<HiringStrategyResponse>.Failure(
                 Error.Validation(
                     "JobProfile.NotApproved",
                     "The Job Profile must be approved before generating a Hiring Strategy."));
@@ -88,7 +89,7 @@ internal sealed class CreateHiringStrategyCommandHandler
 
         if (existingHiringStrategy)
         {
-            return Result<CreateHiringStrategyResponse>.Failure(
+            return Result<HiringStrategyResponse>.Failure(
                 Error.Conflict(
                     "HiringStrategy.AlreadyExists",
                     $"A Hiring Strategy already exists for Campaign '{request.CampaignId}'."));
@@ -104,7 +105,7 @@ internal sealed class CreateHiringStrategyCommandHandler
 
         if (aiResult.IsFailure)
         {
-            return Result<CreateHiringStrategyResponse>.Failure(
+            return Result<HiringStrategyResponse>.Failure(
                 aiResult.Error);
         }
 
@@ -133,15 +134,19 @@ internal sealed class CreateHiringStrategyCommandHandler
         // Map to Response
         // ------------------------------------------------------------
 
-        var response = new CreateHiringStrategyResponse(
-            hiringStrategy.Id,
-            hiringStrategy.OrganizationId,
-            hiringStrategy.CampaignId,
-            hiringStrategy.Content,
-            hiringStrategy.StructuredContent,
-            hiringStrategy.Status);
+        var response = new HiringStrategyResponse(
+       hiringStrategy.Id,
+       hiringStrategy.OrganizationId,
+       hiringStrategy.CampaignId,
+       hiringStrategy.Content,
+       hiringStrategy.StructuredContent,
+       hiringStrategy.Status.ToString(),
+       hiringStrategy.ProviderName,
+       hiringStrategy.ModelName,
+       hiringStrategy.PromptVersion,
+       hiringStrategy.CreatedOn);
 
-        return Result<CreateHiringStrategyResponse>.Success(
+        return Result<HiringStrategyResponse>.Success(
             response);
     }
 }
