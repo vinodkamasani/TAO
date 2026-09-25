@@ -46,7 +46,7 @@ public static class UpdateAssessmentStrategyEndpoint
                         round.Type,
                         round.Difficulty,
                         round.DurationInMinutes,
-                        round.QuestionCount,
+                        round.TargetQuestionCount,
                         round.Competencies
                             .Select(competency =>
                                 new UpdateAssessmentCompetencyCommand(

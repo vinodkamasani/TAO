@@ -54,8 +54,8 @@ public static class DependencyInjection
         {
             options.Cookie.Name = "TAO.Auth";
             options.Cookie.HttpOnly = true;
-            options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; // later change it to CookieSecurePolicy.Always in production
-            options.Cookie.SameSite = SameSiteMode.Lax;
+            options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // later change it to CookieSecurePolicy.Always in production
+            options.Cookie.SameSite = SameSiteMode.None;
 
             options.LoginPath = "/api/auth/login";
             options.AccessDeniedPath = "/api/auth/access-denied";

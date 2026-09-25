@@ -9,7 +9,7 @@ public sealed record UpdateAssessmentRoundRequest(
     string Type,
     string Difficulty,
     int DurationInMinutes,
-    int QuestionCount,
+    int TargetQuestionCount,
     IReadOnlyCollection<UpdateAssessmentCompetencyRequest> Competencies);
 
 public sealed record UpdateAssessmentCompetencyRequest(
