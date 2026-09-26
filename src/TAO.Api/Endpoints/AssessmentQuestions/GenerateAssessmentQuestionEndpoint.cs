@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using TAO.Api.Extensions;
 using TAO.Application.AssessmentQuestions.Generate;
 
 namespace TAO.Api.Endpoints.AssessmentQuestions;
@@ -23,12 +22,12 @@ public static class GenerateAssessmentQuestionEndpoint
 
                     if (result.IsFailure)
                     {
-                        // Use the error's ToString() to include something useful; adjust status code as appropriate.
-                        return Results.Problem(detail: result.Error?.ToString(), statusCode: 400);
+                        return Results.Problem(
+                            detail: result.Error?.ToString(),
+                            statusCode: 400);
                     }
 
-                    return result.ToCreatedResult(
-                        $"/api/assessment-questions/{result.Value.QuestionId}");
+                    return Results.Ok(result.Value);
                 })
             .WithName("GenerateAssessmentQuestion")
             .WithTags("Assessment Questions");

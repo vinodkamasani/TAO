@@ -1,4 +1,5 @@
 ﻿using TAO.Api.Endpoints.AssessmentSessions.Create;
+using TAO.Api.Endpoints.AssessmentSessions.Get;
 
 namespace TAO.Api.Endpoints.AssessmentSessions;
 
@@ -12,6 +13,7 @@ public static class AssessmentSessionEndpoints
             .WithTags("Assessment Sessions");
 
         group.MapCreateAssessmentSessionEndpoint();
+        group.MapGetAssessmentSessionEndpoint();
 
         return group;
     }

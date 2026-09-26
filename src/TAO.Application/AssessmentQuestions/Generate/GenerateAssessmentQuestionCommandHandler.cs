@@ -13,13 +13,16 @@ internal sealed class GenerateAssessmentQuestionCommandHandler
         Result<GenerateAssessmentQuestionResponse>>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUser _currentUser;
     private readonly IAssessmentQuestionGenerationService _generationService;
 
     public GenerateAssessmentQuestionCommandHandler(
         IApplicationDbContext context,
+        ICurrentUser currentUser,
         IAssessmentQuestionGenerationService generationService)
     {
         _context = context;
+        _currentUser = currentUser;
         _generationService = generationService;
     }
 
@@ -27,11 +30,54 @@ internal sealed class GenerateAssessmentQuestionCommandHandler
         GenerateAssessmentQuestionCommand request,
         CancellationToken cancellationToken)
     {
-        var session = await _context
-            .Set<AssessmentSession>()
-            .FirstOrDefaultAsync(
-                x => x.Id == request.AssessmentSessionId,
-                cancellationToken);
+        // ---------------------------------------------------------
+        // 1. Validate authentication
+        // ---------------------------------------------------------
+
+        if (!_currentUser.IsAuthenticated)
+        {
+            return Result<GenerateAssessmentQuestionResponse>.Failure(
+                Error.Unauthorized(
+                    "AssessmentQuestion.Unauthorized",
+                    "The current user is not authenticated."));
+        }
+
+        // ---------------------------------------------------------
+        // 2. Get organization from authenticated user
+        // ---------------------------------------------------------
+
+        var organizationId = _currentUser.OrganizationId;
+
+        if (organizationId is null)
+        {
+            return Result<GenerateAssessmentQuestionResponse>.Failure(
+                Error.Unauthorized(
+                    "AssessmentQuestion.OrganizationNotFound",
+                    "The current user's organization could not be identified."));
+        }
+
+        // ---------------------------------------------------------
+        // 3. Load assessment session with tenant isolation
+        //
+        // AssessmentSession does not contain OrganizationId.
+        // Scope it through CandidateApplication.
+        // ---------------------------------------------------------
+
+        var session = await (
+                  from assessmentSession in _context
+                      .Set<AssessmentSession>()
+
+                  join candidateApplication in _context
+                      .Set<CandidateApplication>()
+                      on assessmentSession.CandidateApplicationId
+                          equals candidateApplication.Id
+
+                  where assessmentSession.Id == request.AssessmentSessionId
+                        && candidateApplication.OrganizationId
+                            == organizationId.Value
+
+                  select assessmentSession
+              ).FirstOrDefaultAsync(cancellationToken);
 
         if (session is null)
         {
@@ -41,6 +87,10 @@ internal sealed class GenerateAssessmentQuestionCommandHandler
                     $"Assessment session '{request.AssessmentSessionId}' was not found."));
         }
 
+        // ---------------------------------------------------------
+        // 4. Validate current round
+        // ---------------------------------------------------------
+
         if (!session.CurrentSessionRoundId.HasValue)
         {
             return Result<GenerateAssessmentQuestionResponse>.Failure(
@@ -49,12 +99,16 @@ internal sealed class GenerateAssessmentQuestionCommandHandler
                     "The assessment session does not have a current round."));
         }
 
+        // ---------------------------------------------------------
+        // 5. Load current session round
+        // ---------------------------------------------------------
+
         var sessionRound = await _context
             .Set<AssessmentSessionRound>()
             .FirstOrDefaultAsync(
                 x =>
-                    x.Id == session.CurrentSessionRoundId.Value &&
-                    x.AssessmentSessionId == session.Id,
+                    x.Id == session.CurrentSessionRoundId.Value
+                    && x.AssessmentSessionId == session.Id,
                 cancellationToken);
 
         if (sessionRound is null)
@@ -65,21 +119,34 @@ internal sealed class GenerateAssessmentQuestionCommandHandler
                     "The current assessment session round was not found."));
         }
 
-        var result = await _generationService.GenerateNextAsync(
-            session,
-            sessionRound,
-            cancellationToken);
+        // ---------------------------------------------------------
+        // 6. Generate next question
+        // ---------------------------------------------------------
 
-        if (result.IsFailure)
+        var generationResult =
+            await _generationService.GenerateNextAsync(
+                session,
+                sessionRound,
+                cancellationToken);
+
+        if (generationResult.IsFailure)
         {
             return Result<GenerateAssessmentQuestionResponse>.Failure(
-                result.Error!);
+                generationResult.Error!);
         }
 
-        var assessmentQuestion = result.Value!;
+        var assessmentQuestion = generationResult.Value!;
+
+        // ---------------------------------------------------------
+        // 7. Set current question
+        // ---------------------------------------------------------
 
         session.SetCurrentQuestion(
             assessmentQuestion.Id);
+
+        // ---------------------------------------------------------
+        // 8. Persist generated question
+        // ---------------------------------------------------------
 
         _context
             .Set<AssessmentQuestion>()
@@ -88,11 +155,17 @@ internal sealed class GenerateAssessmentQuestionCommandHandler
         await _context.SaveChangesAsync(
             cancellationToken);
 
+        // ---------------------------------------------------------
+        // 9. Return generated question
+        // ---------------------------------------------------------
+
+        var response = new GenerateAssessmentQuestionResponse(
+            assessmentQuestion.Id,
+            assessmentQuestion.Order,
+            assessmentQuestion.PrimaryQuestion,
+            assessmentQuestion.Competencies);
+
         return Result<GenerateAssessmentQuestionResponse>.Success(
-            new GenerateAssessmentQuestionResponse(
-                assessmentQuestion.Id,
-                assessmentQuestion.Order,
-                assessmentQuestion.PrimaryQuestion,
-                assessmentQuestion.Competencies));
+            response);
     }
 }
