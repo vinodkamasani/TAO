@@ -50,8 +50,8 @@ public sealed class GetUsersHandler(
                 x.FirstName,
                 x.LastName,
                 x.Email,
-                x.Role,
-                x.Status,
+                x.Role.ToString(),
+                x.Status.ToString(),
                 x.CreatedOn))
             .ToListAsync(cancellationToken);
 

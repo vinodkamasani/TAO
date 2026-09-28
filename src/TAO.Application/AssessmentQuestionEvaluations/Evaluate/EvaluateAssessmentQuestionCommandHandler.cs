@@ -23,17 +23,42 @@ internal sealed class EvaluateAssessmentQuestionCommandHandler
     {
         _context = context;
         _generator = generator;
+        _currentUser = current;
     }
 
     public async Task<Result> Handle(
         EvaluateAssessmentQuestionCommand request,
         CancellationToken cancellationToken)
     {
-        var question = await _context
-            .Set<AssessmentQuestion>()
-            .FirstOrDefaultAsync(
-                x => x.Id == request.AssessmentQuestionId,
-                cancellationToken);
+        if (!_currentUser.IsAuthenticated ||
+          _currentUser.UserId is null ||
+          _currentUser.OrganizationId is null)
+        {
+            return Result.Failure(
+                Error.Unauthorized(
+                    "AssessmentEvaluation.Unauthorized",
+                    "The current user is not authenticated."));
+        }
+
+        var organizationId = _currentUser.OrganizationId.Value;
+
+        var question = await (
+      from q in _context.Set<AssessmentQuestion>()
+
+      join sessionRoundLocal in _context.Set<AssessmentSessionRound>()
+          on q.AssessmentSessionRoundId equals sessionRoundLocal.Id
+
+      join session in _context.Set<AssessmentSession>()
+          on sessionRoundLocal.AssessmentSessionId equals session.Id
+
+      join candidateApplication in _context.Set<CandidateApplication>()
+          on session.CandidateApplicationId equals candidateApplication.Id
+
+      where q.Id == request.AssessmentQuestionId
+            && candidateApplication.OrganizationId == organizationId
+
+      select q
+  ).FirstOrDefaultAsync(cancellationToken);
 
         if (question is null)
         {

@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using TAO.Application.AssessmentQuestions.Generate;
 using TAO.Application.Common.Interfaces;
 using TAO.Application.ResumeImports.Services;
 using TAO.Domain.Entities;
@@ -12,19 +13,49 @@ internal sealed class CreateResumeImportCommandHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IResumeImportProcessor _resumeImportProcessor;
+    private readonly ICurrentUser _currentUser;
 
     public CreateResumeImportCommandHandler(
         IApplicationDbContext context,
-        IResumeImportProcessor resumeImportProcessor)
+        IResumeImportProcessor resumeImportProcessor,
+        ICurrentUser currentUser)
     {
         _context = context;
         _resumeImportProcessor = resumeImportProcessor;
+        _currentUser = currentUser;
     }
 
     public async Task<Result<Guid>> Handle(
         CreateResumeImportCommand request,
         CancellationToken cancellationToken)
     {
+
+        // ---------------------------------------------------------
+        // 1. Validate authentication
+        // ---------------------------------------------------------
+
+        if (!_currentUser.IsAuthenticated)
+        {
+            return Result<Guid>.Failure(
+                Error.Unauthorized(
+                    "CreateResumeImport.Unauthorized",
+                    "The current user is not authenticated."));
+        }
+
+        // ---------------------------------------------------------
+        // 2. Get organization from authenticated user
+        // ---------------------------------------------------------
+
+        var organizationId = _currentUser.OrganizationId;
+
+        if (organizationId is null)
+        {
+            return Result<Guid>.Failure(
+                Error.Unauthorized(
+                    "CreateResumeImport.OrganizationNotFound",
+                    "The current user's organization could not be identified."));
+        }
+
         // ------------------------------------------------------------------
         // Validate Campaign
         // ------------------------------------------------------------------
@@ -32,7 +63,7 @@ internal sealed class CreateResumeImportCommandHandler
         var campaign = await _context
             .Set<Campaign>()
             .FirstOrDefaultAsync(
-                c => c.Id == request.CampaignId,
+                c => c.Id == request.CampaignId && c.OrganizationId == organizationId.Value,
                 cancellationToken);
 
         if (campaign is null)

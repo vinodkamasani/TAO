@@ -21,24 +21,51 @@ internal sealed class GenerateFollowUpCommandHandler
 
     private readonly IApplicationDbContext _context;
     private readonly IAssessmentFollowUpGenerator _followUpGenerator;
+    private readonly ICurrentUser _currentUser;
 
     public GenerateFollowUpCommandHandler(
         IApplicationDbContext context,
-        IAssessmentFollowUpGenerator followUpGenerator)
+        IAssessmentFollowUpGenerator followUpGenerator,
+        ICurrentUser currentUser)
     {
         _context = context;
         _followUpGenerator = followUpGenerator;
+        _currentUser = currentUser;
     }
 
     public async Task<Result<GenerateFollowUpResponse>> Handle(
         GenerateFollowUpCommand request,
         CancellationToken cancellationToken)
     {
-        var question = await _context
-            .Set<AssessmentQuestion>()
-            .FirstOrDefaultAsync(
-                x => x.Id == request.AssessmentQuestionId,
-                cancellationToken);
+        if (!_currentUser.IsAuthenticated ||
+   _currentUser.UserId is null ||
+   _currentUser.OrganizationId is null)
+        {
+            return Result<GenerateFollowUpResponse>.Failure(
+                Error.Unauthorized(
+                    "AssessmentEvaluation.Unauthorized",
+                    "The current user is not authenticated."));
+        }
+
+        var organizationId = _currentUser.OrganizationId.Value;
+
+        var question = await (
+      from q in _context.Set<AssessmentQuestion>()
+
+      join sessionRoundLocal in _context.Set<AssessmentSessionRound>()
+          on q.AssessmentSessionRoundId equals sessionRoundLocal.Id
+
+      join sessionLocal in _context.Set<AssessmentSession>()
+          on sessionRoundLocal.AssessmentSessionId equals sessionLocal.Id
+
+      join candidateApplication in _context.Set<CandidateApplication>()
+          on sessionLocal.CandidateApplicationId equals candidateApplication.Id
+
+      where q.Id == request.AssessmentQuestionId
+            && candidateApplication.OrganizationId == organizationId
+
+      select q
+  ).FirstOrDefaultAsync(cancellationToken);
 
         if (question is null)
         {

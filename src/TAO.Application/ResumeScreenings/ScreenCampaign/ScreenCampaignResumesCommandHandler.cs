@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using TAO.AI.Abstractions;
 using TAO.AI.ResumeScreening.Contracts;
+using TAO.Application.AssessmentQuestions.Generate;
 using TAO.Application.Common.Interfaces;
 using TAO.Application.ResumeScreenings.Services;
 using TAO.Domain.Entities;
@@ -18,21 +19,49 @@ internal sealed class ScreenCampaignResumesCommandHandler
     private readonly IApplicationDbContext _context;
     private readonly IResumeScreeningGenerator _resumeScreeningGenerator;
     private readonly IResumeScreeningMarkdownGenerator _markdownGenerator;
-
+    private readonly ICurrentUser _currentUser;
     public ScreenCampaignResumesCommandHandler(
         IApplicationDbContext context,
         IResumeScreeningGenerator resumeScreeningGenerator,
-        IResumeScreeningMarkdownGenerator markdownGenerator)
+        IResumeScreeningMarkdownGenerator markdownGenerator,
+        ICurrentUser currentUser)
     {
         _context = context;
         _resumeScreeningGenerator = resumeScreeningGenerator;
         _markdownGenerator = markdownGenerator;
+        _currentUser = currentUser;
     }
 
     public async Task<Result<ScreenCampaignResumesResult>> Handle(
         ScreenCampaignResumesCommand request,
         CancellationToken cancellationToken)
     {
+
+        // ---------------------------------------------------------
+        // 1. Validate authentication
+        // ---------------------------------------------------------
+
+        if (!_currentUser.IsAuthenticated)
+        {
+            return Result<ScreenCampaignResumesResult>.Failure(
+                Error.Unauthorized(
+                    "ScreenCampaignResumes.Unauthorized",
+                    "The current user is not authenticated."));
+        }
+
+        // ---------------------------------------------------------
+        // 2. Get organization from authenticated user
+        // ---------------------------------------------------------
+
+        var organizationId = _currentUser.OrganizationId;
+
+        if (organizationId is null)
+        {
+            return Result<ScreenCampaignResumesResult>.Failure(
+                Error.Unauthorized(
+                    "ScreenCampaignResumes.OrganizationNotFound",
+                    "The current user's organization could not be identified."));
+        }
         // ------------------------------------------------------------
         // Load Campaign
         // ------------------------------------------------------------
@@ -40,7 +69,7 @@ internal sealed class ScreenCampaignResumesCommandHandler
         var campaign = await _context
             .Set<Campaign>()
             .FirstOrDefaultAsync(
-                x => x.Id == request.CampaignId,
+                x => x.Id == request.CampaignId && x.OrganizationId == organizationId.Value,
                 cancellationToken);
 
         if (campaign is null)

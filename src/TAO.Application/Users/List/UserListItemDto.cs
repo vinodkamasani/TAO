@@ -7,6 +7,6 @@ public sealed record UserListItemDto(
     string FirstName,
     string LastName,
     string Email,
-    UserRole Role,
-    UserStatus Status,
+    string Role,
+    string Status,
     DateTime CreatedOn);

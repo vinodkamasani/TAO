@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using TAO.Application.AssessmentQuestions.Generate;
 using TAO.Application.Common.Interfaces;
 using TAO.Domain.Entities;
 using TAO.SharedKernel.Results;
@@ -13,23 +14,53 @@ internal sealed class SendRecommendedEmailsCommandHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IEmailSender _emailSender;
+    private readonly ICurrentUser _currentUser;
 
     public SendRecommendedEmailsCommandHandler(
         IApplicationDbContext context,
-        IEmailSender emailSender)
+        IEmailSender emailSender,
+        ICurrentUser currentUser)
     {
         _context = context;
         _emailSender = emailSender;
+        _currentUser = currentUser;
     }
 
     public async Task<Result<SendRecommendedEmailsResponse>> Handle(
         SendRecommendedEmailsCommand request,
         CancellationToken cancellationToken)
     {
+
+        // ---------------------------------------------------------
+        // 1. Validate authentication
+        // ---------------------------------------------------------
+
+        if (!_currentUser.IsAuthenticated)
+        {
+            return Result<SendRecommendedEmailsResponse>.Failure(
+                Error.Unauthorized(
+                    "SendRecommendedEmails.Unauthorized",
+                    "The current user is not authenticated."));
+        }
+
+        // ---------------------------------------------------------
+        // 2. Get organization from authenticated user
+        // ---------------------------------------------------------
+
+        var organizationId = _currentUser.OrganizationId;
+
+        if (organizationId is null)
+        {
+            return Result<SendRecommendedEmailsResponse>.Failure(
+                Error.Unauthorized(
+                    "SendRecommendedEmails.OrganizationNotFound",
+                    "The current user's organization could not be identified."));
+        }
+
         var campaignExists = await _context
             .Set<Domain.Entities.Campaign>()
             .AnyAsync(
-                x => x.Id == request.CampaignId,
+                x => x.Id == request.CampaignId && x.OrganizationId == organizationId.Value,
                 cancellationToken);
 
         if (!campaignExists)

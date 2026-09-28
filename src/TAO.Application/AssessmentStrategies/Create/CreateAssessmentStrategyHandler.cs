@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using TAO.AI.Abstractions;
 using TAO.AI.AssessmentStrategies.Contracts;
+using TAO.Application.AssessmentQuestions.Generate;
 using TAO.Application.AssessmentStrategies.Contracts;
 using TAO.Application.AssessmentStrategies.Services;
 using TAO.Application.Common.Interfaces;
@@ -22,21 +23,51 @@ internal sealed class CreateAssessmentStrategyCommandHandler
     private readonly IApplicationDbContext _context;
     private readonly IAssessmentStrategyGenerator _assessmentStrategyGenerator;
     private readonly IAssessmentStrategyMarkdownGenerator _markdownGenerator;
+    private readonly ICurrentUser _currentUser;
 
     public CreateAssessmentStrategyCommandHandler(
         IApplicationDbContext context,
         IAssessmentStrategyGenerator assessmentStrategyGenerator,
-        IAssessmentStrategyMarkdownGenerator assessmentStrategyMarkdownGenerator)
+        IAssessmentStrategyMarkdownGenerator assessmentStrategyMarkdownGenerator,
+        ICurrentUser currentUser)
     {
         _context = context;
         _assessmentStrategyGenerator = assessmentStrategyGenerator;
         _markdownGenerator = assessmentStrategyMarkdownGenerator;
+        _currentUser = currentUser;
     }
 
     public async Task<Result<AssessmentStrategyResponse>> Handle(
         CreateAssessmentStrategyCommand request,
         CancellationToken cancellationToken)
     {
+        // ---------------------------------------------------------
+        // 1. Validate authentication
+        // ---------------------------------------------------------
+
+        if (!_currentUser.IsAuthenticated)
+        {
+            return Result<AssessmentStrategyResponse>.Failure(
+                Error.Unauthorized(
+                    "AssessmentStrategyResponse.Unauthorized",
+                    "The current user is not authenticated."));
+        }
+
+        // ---------------------------------------------------------
+        // 2. Get organization from authenticated user
+        // ---------------------------------------------------------
+
+        var organizationId = _currentUser.OrganizationId;
+
+        if (organizationId is null)
+        {
+            return Result<AssessmentStrategyResponse>.Failure(
+                Error.Unauthorized(
+                    "AssessmentStrategyResponse.OrganizationNotFound",
+                    "The current user's organization could not be identified."));
+        }
+
+
         // ------------------------------------------------------------
         // Load Campaign
         // ------------------------------------------------------------
@@ -44,7 +75,7 @@ internal sealed class CreateAssessmentStrategyCommandHandler
         var campaign = await _context
             .Set<Campaign>()
             .FirstOrDefaultAsync(
-                c => c.Id == request.CampaignId,
+                c => c.Id == request.CampaignId && c.OrganizationId == organizationId.Value,
                 cancellationToken);
 
         if (campaign is null)

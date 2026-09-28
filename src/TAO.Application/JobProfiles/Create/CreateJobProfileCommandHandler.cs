@@ -14,23 +14,52 @@ internal sealed class CreateJobProfileCommandHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IJobProfileGenerator _jobProfileGenerator;
+    private readonly ICurrentUser _currentUser;
 
     public CreateJobProfileCommandHandler(
         IApplicationDbContext context,
-        IJobProfileGenerator jobProfileGenerator)
+        IJobProfileGenerator jobProfileGenerator,
+        ICurrentUser currentUser)
     {
         _context = context;
         _jobProfileGenerator = jobProfileGenerator;
+        _currentUser = currentUser;
     }
 
     public async Task<Result<JobProfileResponse>> Handle(
         CreateJobProfileCommand request,
         CancellationToken cancellationToken)
     {
+        // ---------------------------------------------------------
+        // 1. Validate authentication
+        // ---------------------------------------------------------
+
+        if (!_currentUser.IsAuthenticated)
+        {
+            return Result<JobProfileResponse>.Failure(
+                Error.Unauthorized(
+                    "CreateJobProfile.Unauthorized",
+                    "The current user is not authenticated."));
+        }
+
+        // ---------------------------------------------------------
+        // 2. Get organization from authenticated user
+        // ---------------------------------------------------------
+
+        var organizationId = _currentUser.OrganizationId;
+
+        if (organizationId is null)
+        {
+            return Result<JobProfileResponse>.Failure(
+                Error.Unauthorized(
+                    "CreateJobProfile.OrganizationNotFound",
+                    "The current user's organization could not be identified."));
+        }
+
         var campaign = await _context
             .Set<Campaign>()
             .FirstOrDefaultAsync(
-                c => c.Id == request.CampaignId,
+                c => c.Id == request.CampaignId && c.OrganizationId == organizationId.Value,
                 cancellationToken);
 
         if (campaign is null)

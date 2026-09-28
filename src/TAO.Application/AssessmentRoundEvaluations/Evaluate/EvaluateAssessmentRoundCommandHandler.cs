@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TAO.AI.Abstractions;
+using TAO.Application.AssessmentQuestions.Generate;
 using TAO.Application.Common.Interfaces;
 using TAO.Domain.Entities;
 using TAO.SharedKernel.Results;
@@ -12,25 +13,63 @@ internal sealed class EvaluateAssessmentRoundCommandHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IAssessmentRoundEvaluationGenerator _generator;
+    private readonly ICurrentUser _currentUser;
 
     public EvaluateAssessmentRoundCommandHandler(
         IApplicationDbContext context,
-        IAssessmentRoundEvaluationGenerator generator)
+        IAssessmentRoundEvaluationGenerator generator,
+        ICurrentUser currentUser)
     {
         _context = context;
         _generator = generator;
+        _currentUser = currentUser;
     }
 
     public async Task<Result> Handle(
         EvaluateAssessmentRoundCommand request,
         CancellationToken cancellationToken)
     {
-        var sessionRound = await _context
-            .Set<AssessmentSessionRound>()
-            .FirstOrDefaultAsync(
-                x => x.Id == request.AssessmentSessionRoundId,
-                cancellationToken);
 
+        // ---------------------------------------------------------
+        // 1. Validate authentication
+        // ---------------------------------------------------------
+
+        if (!_currentUser.IsAuthenticated)
+        {
+            return Result<Result>.Failure(
+                Error.Unauthorized(
+                    "AssessmentQuestion.Unauthorized",
+                    "The current user is not authenticated."));
+        }
+
+        // ---------------------------------------------------------
+        // 2. Get organization from authenticated user
+        // ---------------------------------------------------------
+
+        var organizationId = _currentUser.OrganizationId;
+
+        if (organizationId is null)
+        {
+            return Result<GenerateAssessmentQuestionResponse>.Failure(
+                Error.Unauthorized(
+                    "AssessmentQuestion.OrganizationNotFound",
+                    "The current user's organization could not be identified."));
+        }
+
+        var sessionRound = await (
+     from round in _context.Set<AssessmentSessionRound>()
+
+     join session in _context.Set<AssessmentSession>()
+         on round.AssessmentSessionId equals session.Id
+
+     join candidateApplication in _context.Set<CandidateApplication>()
+         on session.CandidateApplicationId equals candidateApplication.Id
+
+     where round.Id == request.AssessmentSessionRoundId
+           && candidateApplication.OrganizationId == organizationId
+
+     select round
+ ).FirstOrDefaultAsync(cancellationToken);
         if (sessionRound is null)
         {
             return Result.Failure(

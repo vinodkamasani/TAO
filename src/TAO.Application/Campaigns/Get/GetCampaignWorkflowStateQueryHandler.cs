@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using TAO.Application.AssessmentQuestions.Generate;
 using TAO.Application.Common.Interfaces;
 using TAO.Domain.Entities;
 using TAO.Domain.Enums;
@@ -13,22 +14,51 @@ public sealed class GetCampaignWorkflowStateQueryHandler
         Result<CampaignWorkflowStateResponse>>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUser _currentUser;
 
     public GetCampaignWorkflowStateQueryHandler(
-        IApplicationDbContext context)
+        IApplicationDbContext context,
+        ICurrentUser currentUser)
     {
         _context = context;
+        _currentUser = currentUser;
     }
 
     public async Task<Result<CampaignWorkflowStateResponse>> Handle(
         GetCampaignWorkflowStateQuery request,
         CancellationToken cancellationToken)
     {
+        // ---------------------------------------------------------
+        // 1. Validate authentication
+        // ---------------------------------------------------------
+
+        if (!_currentUser.IsAuthenticated)
+        {
+            return Result<CampaignWorkflowStateResponse>.Failure(
+                Error.Unauthorized(
+                    "CampaignWorkflowStateResponse.Unauthorized",
+                    "The current user is not authenticated."));
+        }
+
+        // ---------------------------------------------------------
+        // 2. Get organization from authenticated user
+        // ---------------------------------------------------------
+
+        var organizationId = _currentUser.OrganizationId;
+
+        if (organizationId is null)
+        {
+            return Result<CampaignWorkflowStateResponse>.Failure(
+                Error.Unauthorized(
+                    "CampaignWorkflowStateResponse.OrganizationNotFound",
+                    "The current user's organization could not be identified."));
+        }
+
         var campaign = await _context
             .Set<Campaign>()
             .AsNoTracking()
             .FirstOrDefaultAsync(
-                x => x.Id == request.CampaignId,
+                x => x.Id == request.CampaignId && x.OrganizationId == organizationId.Value,
                 cancellationToken);
 
         if (campaign is null)

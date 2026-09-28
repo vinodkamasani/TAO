@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using TAO.Application.AssessmentQuestions.Generate;
 using TAO.Application.Common.Interfaces;
 using TAO.Domain.Enums;
 using TAO.SharedKernel.Results;
@@ -10,21 +11,51 @@ internal sealed class ApproveHiringStrategyCommandHandler
     : IRequestHandler<ApproveHiringStrategyCommand, Result>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUser _currentUser; 
 
     public ApproveHiringStrategyCommandHandler(
-        IApplicationDbContext context)
+        IApplicationDbContext context,
+        ICurrentUser currentUser)
     {
         _context = context;
+        _currentUser = currentUser;
     }
 
     public async Task<Result> Handle(
         ApproveHiringStrategyCommand request,
         CancellationToken cancellationToken)
     {
+        // ---------------------------------------------------------
+        // 1. Validate authentication
+        // ---------------------------------------------------------
+
+        if (!_currentUser.IsAuthenticated)
+        {
+            return Result<Result>.Failure(
+                Error.Unauthorized(
+                    "ApproveHiringStrategy.Unauthorized",
+                    "The current user is not authenticated."));
+        }
+
+        // ---------------------------------------------------------
+        // 2. Get organization from authenticated user
+        // ---------------------------------------------------------
+
+        var organizationId = _currentUser.OrganizationId;
+
+        if (organizationId is null)
+        {
+            return Result<Result>.Failure(
+                Error.Unauthorized(
+                    "ApproveHiringStrategy.OrganizationNotFound",
+                    "The current user's organization could not be identified."));
+        }
+
+
         var hiringStrategy = await _context
             .Set<HiringStrategy>()
             .SingleOrDefaultAsync(
-                x => x.Id == request.HiringStrategyId,
+                x => x.Id == request.HiringStrategyId && x.OrganizationId == organizationId.Value,
                 cancellationToken);
 
         if (hiringStrategy is null)

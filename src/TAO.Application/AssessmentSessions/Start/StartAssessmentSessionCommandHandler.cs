@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using TAO.Application.AssessmentQuestions.Generate;
 using TAO.Application.Common.Interfaces;
 using TAO.Domain.Entities;
 using TAO.SharedKernel;
@@ -11,22 +12,68 @@ internal sealed class StartAssessmentSessionCommandHandler
     : IRequestHandler<StartAssessmentSessionCommand, Result>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUser _currentUser;
 
     public StartAssessmentSessionCommandHandler(
-        IApplicationDbContext context)
+        IApplicationDbContext context,
+        ICurrentUser currentUser)
     {
         _context = context;
+        _currentUser = currentUser;
     }
 
     public async Task<Result> Handle(
         StartAssessmentSessionCommand request,
         CancellationToken cancellationToken)
     {
-        var session = await _context
-            .Set<AssessmentSession>()
-            .FirstOrDefaultAsync(
-                x => x.Id == request.AssessmentSessionId,
-                cancellationToken);
+        // ---------------------------------------------------------
+        // 1. Validate authentication
+        // ---------------------------------------------------------
+
+        if (!_currentUser.IsAuthenticated)
+        {
+            return Result<Result>.Failure(
+                Error.Unauthorized(
+                    "StartAssessmentSessionCommandHandler.Unauthorized",
+                    "The current user is not authenticated."));
+        }
+
+        // ---------------------------------------------------------
+        // 2. Get organization from authenticated user
+        // ---------------------------------------------------------
+
+        var organizationId = _currentUser.OrganizationId;
+
+        if (organizationId is null)
+        {
+            return Result<GenerateAssessmentQuestionResponse>.Failure(
+                Error.Unauthorized(
+                    "AssessmentQuestion.OrganizationNotFound",
+                    "The current user's organization could not be identified."));
+        }
+
+        // ---------------------------------------------------------
+        // 3. Load assessment session with tenant isolation
+        //
+        // AssessmentSession does not contain OrganizationId.
+        // Scope it through CandidateApplication.
+        // ---------------------------------------------------------
+
+        var session = await (
+                  from assessmentSession in _context
+                      .Set<AssessmentSession>()
+
+                  join candidateApplication in _context
+                      .Set<CandidateApplication>()
+                      on assessmentSession.CandidateApplicationId
+                          equals candidateApplication.Id
+
+                  where assessmentSession.Id == request.AssessmentSessionId
+                        && candidateApplication.OrganizationId
+                            == organizationId.Value
+
+                  select assessmentSession
+              ).FirstOrDefaultAsync(cancellationToken);
 
         if (session is null)
         {

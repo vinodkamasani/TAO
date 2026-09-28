@@ -14,23 +14,52 @@ internal sealed class RegenerateJobProfileCommandHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IJobProfileGenerator _jobProfileGenerator;
+    private readonly ICurrentUser _currentUser;
 
     public RegenerateJobProfileCommandHandler(
         IApplicationDbContext context,
-        IJobProfileGenerator jobProfileGenerator)
+        IJobProfileGenerator jobProfileGenerator,
+        ICurrentUser currentUser)
     {
         _context = context;
         _jobProfileGenerator = jobProfileGenerator;
+        _currentUser = currentUser;
     }
 
     public async Task<Result<JobProfileResponse>> Handle(
         RegenerateJobProfileCommand request,
         CancellationToken cancellationToken)
     {
+        // ---------------------------------------------------------
+        // 1. Validate authentication
+        // ---------------------------------------------------------
+
+        if (!_currentUser.IsAuthenticated)
+        {
+            return Result<JobProfileResponse>.Failure(
+                Error.Unauthorized(
+                    "RegenerateJobProfile.Unauthorized",
+                    "The current user is not authenticated."));
+        }
+
+        // ---------------------------------------------------------
+        // 2. Get organization from authenticated user
+        // ---------------------------------------------------------
+
+        var organizationId = _currentUser.OrganizationId;
+
+        if (organizationId is null)
+        {
+            return Result<JobProfileResponse>.Failure(
+                Error.Unauthorized(
+                    "RegenerateJobProfile.OrganizationNotFound",
+                    "The current user's organization could not be identified."));
+        }
+
         var jobProfile = await _context
             .Set<JobProfile>()
             .FirstOrDefaultAsync(
-                jp => jp.Id == request.JobProfileId,
+                jp => jp.Id == request.JobProfileId && jp.OrganizationId == organizationId.Value,
                 cancellationToken);
 
         if (jobProfile is null)

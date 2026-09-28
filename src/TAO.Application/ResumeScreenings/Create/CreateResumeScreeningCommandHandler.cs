@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using TAO.AI.Abstractions;
 using TAO.AI.ResumeScreening.Contracts;
+using TAO.Application.AssessmentQuestions.Generate;
 using TAO.Application.Common.Interfaces;
 using TAO.Application.ResumeScreenings.Services;
 using TAO.Domain.Entities;
@@ -16,15 +17,18 @@ internal sealed class CreateResumeScreeningCommandHandler
     private readonly IApplicationDbContext _context;
     private readonly IResumeScreeningGenerator _resumeScreeningGenerator;
     private readonly IResumeScreeningMarkdownGenerator _markdownGenerator;
+    private readonly ICurrentUser _currentUser;
 
     public CreateResumeScreeningCommandHandler(
        IApplicationDbContext context,
        IResumeScreeningGenerator resumeScreeningGenerator,
-       IResumeScreeningMarkdownGenerator markdownGenerator)
+       IResumeScreeningMarkdownGenerator markdownGenerator,
+       ICurrentUser currentUser)
     {
         _context = context;
         _resumeScreeningGenerator = resumeScreeningGenerator;
         _markdownGenerator = markdownGenerator;
+        _currentUser = currentUser;
     }
 
 
@@ -32,6 +36,33 @@ internal sealed class CreateResumeScreeningCommandHandler
         CreateResumeScreeningCommand request,
         CancellationToken cancellationToken)
     {
+
+        // ---------------------------------------------------------
+        // 1. Validate authentication
+        // ---------------------------------------------------------
+
+        if (!_currentUser.IsAuthenticated)
+        {
+            return Result<Guid>.Failure(
+                Error.Unauthorized(
+                    "CreateResumeScreening.Unauthorized",
+                    "The current user is not authenticated."));
+        }
+
+        // ---------------------------------------------------------
+        // 2. Get organization from authenticated user
+        // ---------------------------------------------------------
+
+        var organizationId = _currentUser.OrganizationId;
+
+        if (organizationId is null)
+        {
+            return Result<Guid>.Failure(
+                Error.Unauthorized(
+                    "CreateResumeScreening.OrganizationNotFound",
+                    "The current user's organization could not be identified."));
+        }
+
         // ------------------------------------------------------------
         // Load Candidate Application
         // ------------------------------------------------------------
@@ -39,7 +70,7 @@ internal sealed class CreateResumeScreeningCommandHandler
         var application = await _context
             .Set<CandidateApplication>()
             .FirstOrDefaultAsync(
-                x => x.Id == request.CandidateApplicationId,
+                x => x.Id == request.CandidateApplicationId && x.OrganizationId == organizationId.Value,
                 cancellationToken);
 
         if (application is null)

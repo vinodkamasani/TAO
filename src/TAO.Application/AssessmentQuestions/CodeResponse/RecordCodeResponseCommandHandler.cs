@@ -16,24 +16,52 @@ internal sealed class RecordCodeResponseCommandHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly ISender _sender;
+    private readonly ICurrentUser _currentUser;
 
     public RecordCodeResponseCommandHandler(
         IApplicationDbContext context,
-        ISender sender)
+        ISender sender,
+        ICurrentUser currentUser)
     {
         _context = context;
         _sender = sender;
+        _currentUser = currentUser;
     }
 
     public async Task<Result<GenerateFollowUpResponse>> Handle(
         RecordCodeResponseCommand request,
         CancellationToken cancellationToken)
     {
-        var question = await _context
-            .Set<AssessmentQuestion>()
-            .FirstOrDefaultAsync(
-                x => x.Id == request.AssessmentQuestionId,
-                cancellationToken);
+        if (!_currentUser.IsAuthenticated ||
+           _currentUser.UserId is null ||
+           _currentUser.OrganizationId is null)
+        {
+            return Result<GenerateFollowUpResponse>.Failure(
+                Error.Unauthorized(
+                    "AssessmentEvaluation.Unauthorized",
+                    "The current user is not authenticated."));
+        }
+
+        var organizationId = _currentUser.OrganizationId.Value;
+
+        var question = await (
+      from q in _context.Set<AssessmentQuestion>()
+
+      join sessionRoundLocal in _context.Set<AssessmentSessionRound>()
+          on q.AssessmentSessionRoundId equals sessionRoundLocal.Id
+
+      join session in _context.Set<AssessmentSession>()
+          on sessionRoundLocal.AssessmentSessionId equals session.Id
+
+      join candidateApplication in _context.Set<CandidateApplication>()
+          on session.CandidateApplicationId equals candidateApplication.Id
+
+      where q.Id == request.AssessmentQuestionId
+            && candidateApplication.OrganizationId == organizationId
+
+      select q
+  ).FirstOrDefaultAsync(cancellationToken);
+
 
         if (question is null)
         {

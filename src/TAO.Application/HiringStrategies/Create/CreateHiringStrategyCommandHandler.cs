@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TAO.AI.Abstractions;
+using TAO.Application.AssessmentQuestions.Generate;
 using TAO.Application.Common.Interfaces;
 using TAO.Application.HiringStrategies.Contracts;
 using TAO.Domain.Entities;
@@ -16,19 +17,49 @@ internal sealed class CreateHiringStrategyCommandHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IHiringStrategyGenerator _hiringStrategyGenerator;
+    private readonly ICurrentUser _currentUser;
 
     public CreateHiringStrategyCommandHandler(
         IApplicationDbContext context,
-        IHiringStrategyGenerator hiringStrategyGenerator)
+        IHiringStrategyGenerator hiringStrategyGenerator,
+        ICurrentUser currentUser)
     {
         _context = context;
         _hiringStrategyGenerator = hiringStrategyGenerator;
+        _currentUser = currentUser;
     }
 
     public async Task<Result<HiringStrategyResponse>> Handle(
         CreateHiringStrategyCommand request,
         CancellationToken cancellationToken)
     {
+
+        // ---------------------------------------------------------
+        // 1. Validate authentication
+        // ---------------------------------------------------------
+
+        if (!_currentUser.IsAuthenticated)
+        {
+            return Result<HiringStrategyResponse>.Failure(
+                Error.Unauthorized(
+                    "HiringStrategy.Unauthorized",
+                    "The current user is not authenticated."));
+        }
+
+        // ---------------------------------------------------------
+        // 2. Get organization from authenticated user
+        // ---------------------------------------------------------
+
+        var organizationId = _currentUser.OrganizationId;
+
+        if (organizationId is null)
+        {
+            return Result<HiringStrategyResponse>.Failure(
+                Error.Unauthorized(
+                    "HiringStrategy.OrganizationNotFound",
+                    "The current user's organization could not be identified."));
+        }
+
         // ------------------------------------------------------------
         // Load Campaign
         // ------------------------------------------------------------
@@ -36,7 +67,7 @@ internal sealed class CreateHiringStrategyCommandHandler
         var campaign = await _context
             .Set<Campaign>()
             .FirstOrDefaultAsync(
-                c => c.Id == request.CampaignId,
+                c => c.Id == request.CampaignId && c.OrganizationId == organizationId.Value,
                 cancellationToken);
 
         if (campaign is null)
