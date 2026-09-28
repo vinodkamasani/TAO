@@ -10,7 +10,7 @@ using TAO.SharedKernel.Results;
 namespace TAO.Application.AssessmentQuestions.Skip;
 
 internal sealed class SkipAssessmentQuestionCommandHandler
-    : IRequestHandler<SkipAssessmentQuestionCommand, Result>
+    : IRequestHandler<SkipAssessmentQuestionCommand, Result<AdvanceAssessmentSessionResponse>>
 {
     private readonly IApplicationDbContext _context;
     private readonly ISender _sender;
@@ -26,7 +26,7 @@ internal sealed class SkipAssessmentQuestionCommandHandler
         _currentUser = currentUser;
     }
 
-    public async Task<Result> Handle(
+    public async Task<Result<AdvanceAssessmentSessionResponse>> Handle(
         SkipAssessmentQuestionCommand request,
         CancellationToken cancellationToken)
     {
@@ -34,7 +34,7 @@ internal sealed class SkipAssessmentQuestionCommandHandler
             _currentUser.UserId is null ||
             _currentUser.OrganizationId is null)
         {
-            return Result<Result>.Failure(
+            return Result<AdvanceAssessmentSessionResponse>.Failure(
                 Error.Unauthorized(
                     "AssessmentEvaluation.Unauthorized",
                     "The current user is not authenticated."));
@@ -60,9 +60,10 @@ internal sealed class SkipAssessmentQuestionCommandHandler
       select q
   ).FirstOrDefaultAsync(cancellationToken);
 
+        // when question is null
         if (question is null)
         {
-            return Result.Failure(
+            return Result<AdvanceAssessmentSessionResponse>.Failure(
                 Error.NotFound(
                     "AssessmentQuestion.NotFound",
                     $"Assessment question '{request.AssessmentQuestionId}' was not found."));
@@ -76,10 +77,11 @@ internal sealed class SkipAssessmentQuestionCommandHandler
                     x.CurrentSessionRoundId == question.AssessmentSessionRoundId,
                 cancellationToken);
 
+        // when session is null
         if (session is null)
         {
-            return Result.Failure(
-                Error.Validation(
+            return Result<AdvanceAssessmentSessionResponse>.Failure(
+                    Error.Validation(
                     "AssessmentQuestion.NotCurrentQuestion",
                     "The assessment question is not the current question for an assessment session."));
         }
@@ -96,9 +98,10 @@ internal sealed class SkipAssessmentQuestionCommandHandler
                     session.Id),
                 cancellationToken);
         }
+        // in the catch
         catch (InvalidOperationException ex)
         {
-            return Result.Failure(
+            return Result<AdvanceAssessmentSessionResponse>.Failure(
                 Error.Validation(
                     "AssessmentQuestion.CannotSkip",
                     ex.Message));

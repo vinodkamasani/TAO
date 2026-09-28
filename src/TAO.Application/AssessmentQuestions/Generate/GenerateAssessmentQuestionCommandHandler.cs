@@ -160,10 +160,12 @@ internal sealed class GenerateAssessmentQuestionCommandHandler
         // ---------------------------------------------------------
 
         var response = new GenerateAssessmentQuestionResponse(
-            assessmentQuestion.Id,
-            assessmentQuestion.Order,
-            assessmentQuestion.PrimaryQuestion,
-            assessmentQuestion.Competencies);
+     assessmentQuestion.Id,
+     assessmentQuestion.Order,
+     assessmentQuestion.PrimaryQuestion,
+     assessmentQuestion.Competencies,
+     sessionRound.Type.ToString(),
+     sessionRound.DurationInMinutes);
 
         return Result<GenerateAssessmentQuestionResponse>.Success(
             response);

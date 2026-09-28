@@ -9,6 +9,7 @@ using TAO.Api.Endpoints.AssessmentSessions;
 using TAO.Api.Endpoints.Auth;
 using TAO.Api.Endpoints.Campaigns;
 using TAO.Api.Endpoints.Users;
+using TAO.Api.Endpoints.AssessmentSessions.Workflow;
 
 
 namespace TAO.Api;
@@ -35,6 +36,7 @@ public static class EndpointExtensions
         app.MapCandidateApplicationEndpoints();
         app.MapUserEndpoints();
         app.MapAuthEndpoints();
+        app.MapGetAssessmentWorkflowEndpoint();
         return app;
     }
 }

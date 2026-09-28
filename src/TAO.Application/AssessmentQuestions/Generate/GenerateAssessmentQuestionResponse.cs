@@ -4,4 +4,6 @@ public sealed record GenerateAssessmentQuestionResponse(
     Guid QuestionId,
     int Order,
     string Question,
-    IReadOnlyCollection<string> Competencies);
+    IReadOnlyCollection<string> Competencies,
+    string RoundType,
+    int RoundDurationInMinutes);
