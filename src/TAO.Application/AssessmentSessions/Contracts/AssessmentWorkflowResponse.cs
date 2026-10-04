@@ -41,6 +41,7 @@ public sealed record AssessmentWorkflowRoundResponse(
     int CompletedQuestions,
     int SkippedQuestions,
     int RemainingQuestions,
+    int DurationInMinutes,
 
     int CompletionPercentage,
 

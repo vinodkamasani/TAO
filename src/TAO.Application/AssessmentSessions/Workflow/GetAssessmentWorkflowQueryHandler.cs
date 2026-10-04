@@ -332,6 +332,9 @@ public sealed class GetAssessmentWorkflowQueryHandler(
             CompletionPercentage:
                 completionPercentage,
 
+            DurationInMinutes:
+                round.DurationInMinutes,
+
             StartedOn:
                 round.StartedOn,
 
