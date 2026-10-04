@@ -14,7 +14,7 @@ namespace TAO.Application.AssessmentQuestions.CandidateResponse;
 internal sealed class RecordCandidateResponseCommandHandler
     : IRequestHandler<
         RecordCandidateResponseCommand,
-        Result<GenerateFollowUpResponse>>
+        Result<GenerateFollowUpResponse?>>
 {
     private readonly IApplicationDbContext _context;
     private readonly ISender _sender;
@@ -30,15 +30,15 @@ internal sealed class RecordCandidateResponseCommandHandler
         _currentUser = currentUser;
     }
 
-    public async Task<Result<GenerateFollowUpResponse>> Handle(
+    public async Task<Result<GenerateFollowUpResponse?>> Handle(
         RecordCandidateResponseCommand request,
         CancellationToken cancellationToken)
     {
         if (!_currentUser.IsAuthenticated ||
-            _currentUser.UserId is null ||
-            _currentUser.OrganizationId is null)
+        _currentUser.UserId is null ||
+        _currentUser.OrganizationId is null)
         {
-            return Result<GenerateFollowUpResponse>.Failure(
+            return Result<GenerateFollowUpResponse?>.Failure(
                 Error.Unauthorized(
                     "AssessmentEvaluation.Unauthorized",
                     "The current user is not authenticated."));
@@ -67,7 +67,7 @@ internal sealed class RecordCandidateResponseCommandHandler
 
         if (question is null)
         {
-            return Result<GenerateFollowUpResponse>.Failure(
+            return Result<GenerateFollowUpResponse?>.Failure(
                 Error.NotFound(
                     "AssessmentQuestion.NotFound",
                     $"Assessment question '{request.AssessmentQuestionId}' was not found."));
@@ -75,7 +75,7 @@ internal sealed class RecordCandidateResponseCommandHandler
 
         if (question.Status != AssessmentQuestionStatus.InProgress)
         {
-            return Result<GenerateFollowUpResponse>.Failure(
+            return Result<GenerateFollowUpResponse?>.Failure(
                 Error.Validation(
                     "AssessmentQuestion.NotInProgress",
                     "A candidate response can only be recorded for an in-progress question."));
@@ -83,7 +83,7 @@ internal sealed class RecordCandidateResponseCommandHandler
 
         if (question.Conversation is null)
         {
-            return Result<GenerateFollowUpResponse>.Failure(
+            return Result<GenerateFollowUpResponse?>.Failure(
                 Error.Validation(
                     "AssessmentQuestion.ConversationNotInitialized",
                     "The assessment question does not have an initialized conversation."));
@@ -101,7 +101,7 @@ internal sealed class RecordCandidateResponseCommandHandler
         }
         catch (JsonException)
         {
-            return Result<GenerateFollowUpResponse>.Failure(
+            return Result<GenerateFollowUpResponse?>.Failure(
                 Error.Validation(
                     "AssessmentQuestion.InvalidConversation",
                     "The stored assessment question conversation is invalid."));
@@ -135,8 +135,7 @@ internal sealed class RecordCandidateResponseCommandHandler
             followUpResult.Error?.Code ==
                 "AssessmentQuestion.FollowUpLimitReached")
         {
-            return Result<GenerateFollowUpResponse>.Success(
-                new GenerateFollowUpResponse(null));
+            return Result<GenerateFollowUpResponse?>.Success(null);
         }
 
         return followUpResult;

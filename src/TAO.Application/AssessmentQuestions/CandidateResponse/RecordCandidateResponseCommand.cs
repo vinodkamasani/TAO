@@ -7,4 +7,4 @@ namespace TAO.Application.AssessmentQuestions.CandidateResponse;
 public sealed record RecordCandidateResponseCommand(
   Guid AssessmentQuestionId,
   string Response)
- : IRequest<Result<GenerateFollowUpResponse>>;
+ : IRequest<Result<GenerateFollowUpResponse?>>;

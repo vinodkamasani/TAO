@@ -165,7 +165,8 @@ internal sealed class GenerateAssessmentQuestionCommandHandler
      assessmentQuestion.PrimaryQuestion,
      assessmentQuestion.Competencies,
      sessionRound.Type.ToString(),
-     sessionRound.DurationInMinutes);
+     sessionRound.DurationInMinutes,
+     false);
 
         return Result<GenerateAssessmentQuestionResponse>.Success(
             response);

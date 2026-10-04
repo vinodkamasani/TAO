@@ -6,4 +6,5 @@ public sealed record GenerateAssessmentQuestionResponse(
     string Question,
     IReadOnlyCollection<string> Competencies,
     string RoundType,
-    int RoundDurationInMinutes);
+    int RoundDurationInMinutes,
+    bool IsFollowUpQuestion);

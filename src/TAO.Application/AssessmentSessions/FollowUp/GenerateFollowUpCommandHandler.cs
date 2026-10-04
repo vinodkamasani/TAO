@@ -15,7 +15,7 @@ namespace TAO.Application.AssessmentQuestions.FollowUp;
 internal sealed class GenerateFollowUpCommandHandler
     : IRequestHandler<
         GenerateFollowUpCommand,
-        Result<GenerateFollowUpResponse>>
+        Result<GenerateFollowUpResponse?>>
 {
     private const int MaxFollowUps = 2;
 
@@ -33,15 +33,15 @@ internal sealed class GenerateFollowUpCommandHandler
         _currentUser = currentUser;
     }
 
-    public async Task<Result<GenerateFollowUpResponse>> Handle(
+    public async Task<Result<GenerateFollowUpResponse?>> Handle(
         GenerateFollowUpCommand request,
         CancellationToken cancellationToken)
     {
         if (!_currentUser.IsAuthenticated ||
-   _currentUser.UserId is null ||
-   _currentUser.OrganizationId is null)
+            _currentUser.UserId is null ||
+            _currentUser.OrganizationId is null)
         {
-            return Result<GenerateFollowUpResponse>.Failure(
+            return Result<GenerateFollowUpResponse?>.Failure(
                 Error.Unauthorized(
                     "AssessmentEvaluation.Unauthorized",
                     "The current user is not authenticated."));
@@ -50,26 +50,29 @@ internal sealed class GenerateFollowUpCommandHandler
         var organizationId = _currentUser.OrganizationId.Value;
 
         var question = await (
-      from q in _context.Set<AssessmentQuestion>()
+            from q in _context.Set<AssessmentQuestion>()
 
-      join sessionRoundLocal in _context.Set<AssessmentSessionRound>()
-          on q.AssessmentSessionRoundId equals sessionRoundLocal.Id
+            join sessionRoundLocal in _context
+                .Set<AssessmentSessionRound>()
+                on q.AssessmentSessionRoundId equals sessionRoundLocal.Id
 
-      join sessionLocal in _context.Set<AssessmentSession>()
-          on sessionRoundLocal.AssessmentSessionId equals sessionLocal.Id
+            join session in _context
+                .Set<AssessmentSession>()
+                on sessionRoundLocal.AssessmentSessionId equals session.Id
 
-      join candidateApplication in _context.Set<CandidateApplication>()
-          on sessionLocal.CandidateApplicationId equals candidateApplication.Id
+            join candidateApplication in _context
+                .Set<CandidateApplication>()
+                on session.CandidateApplicationId equals candidateApplication.Id
 
-      where q.Id == request.AssessmentQuestionId
-            && candidateApplication.OrganizationId == organizationId
+            where q.Id == request.AssessmentQuestionId
+                  && candidateApplication.OrganizationId == organizationId
 
-      select q
-  ).FirstOrDefaultAsync(cancellationToken);
+            select q
+        ).FirstOrDefaultAsync(cancellationToken);
 
         if (question is null)
         {
-            return Result<GenerateFollowUpResponse>.Failure(
+            return Result<GenerateFollowUpResponse?>.Failure(
                 Error.NotFound(
                     "AssessmentQuestion.NotFound",
                     $"Assessment question '{request.AssessmentQuestionId}' was not found."));
@@ -77,7 +80,7 @@ internal sealed class GenerateFollowUpCommandHandler
 
         if (question.Status != AssessmentQuestionStatus.InProgress)
         {
-            return Result<GenerateFollowUpResponse>.Failure(
+            return Result<GenerateFollowUpResponse?>.Failure(
                 Error.Validation(
                     "AssessmentQuestion.NotInProgress",
                     "A follow-up can only be generated for an in-progress assessment question."));
@@ -85,7 +88,7 @@ internal sealed class GenerateFollowUpCommandHandler
 
         if (question.Conversation is null)
         {
-            return Result<GenerateFollowUpResponse>.Failure(
+            return Result<GenerateFollowUpResponse?>.Failure(
                 Error.Validation(
                     "AssessmentQuestion.ConversationNotInitialized",
                     "The assessment question conversation has not been initialized."));
@@ -96,7 +99,7 @@ internal sealed class GenerateFollowUpCommandHandler
 
         if (conversationResult.IsFailure)
         {
-            return Result<GenerateFollowUpResponse>.Failure(
+            return Result<GenerateFollowUpResponse?>.Failure(
                 conversationResult.Error!);
         }
 
@@ -106,10 +109,8 @@ internal sealed class GenerateFollowUpCommandHandler
 
         if (followUpCount >= MaxFollowUps)
         {
-            return Result<GenerateFollowUpResponse>.Failure(
-                Error.Validation(
-                    "AssessmentQuestion.FollowUpLimitReached",
-                    "The maximum number of follow-up questions has been reached."));
+            // No error. The question simply has no more follow-ups.
+            return Result<GenerateFollowUpResponse?>.Success(null);
         }
 
         var sessionRound = await _context
@@ -120,7 +121,7 @@ internal sealed class GenerateFollowUpCommandHandler
 
         if (sessionRound is null)
         {
-            return Result<GenerateFollowUpResponse>.Failure(
+            return Result<GenerateFollowUpResponse?>.Failure(
                 Error.NotFound(
                     "AssessmentSessionRound.NotFound",
                     $"Assessment session round '{question.AssessmentSessionRoundId}' was not found."));
@@ -133,12 +134,21 @@ internal sealed class GenerateFollowUpCommandHandler
 
         if (generationResult.IsFailure)
         {
-            return Result<GenerateFollowUpResponse>.Failure(
+            return Result<GenerateFollowUpResponse?>.Failure(
                 generationResult.Error!);
         }
 
-        var followUpQuestion =
-            generationResult.Value!.Response.Question;
+        var generatedResponse = generationResult.Value!.Response;
+
+        var followUpQuestion = generatedResponse.Question;
+
+        if (string.IsNullOrWhiteSpace(followUpQuestion))
+        {
+            return Result<GenerateFollowUpResponse?>.Failure(
+                Error.Validation(
+                    "AssessmentQuestion.EmptyFollowUp",
+                    "The AI generated an empty follow-up question."));
+        }
 
         conversation.Add(
             new JsonObject
@@ -147,8 +157,7 @@ internal sealed class GenerateFollowUpCommandHandler
                 ["content"] = followUpQuestion
             });
 
-        var updatedConversation =
-            conversation.ToJsonString();
+        var updatedConversation = conversation.ToJsonString();
 
         question.UpdateConversation(
             ConversationContent.Create(
@@ -157,9 +166,19 @@ internal sealed class GenerateFollowUpCommandHandler
         await _context.SaveChangesAsync(
             cancellationToken);
 
-        return Result<GenerateFollowUpResponse>.Success(
-            new GenerateFollowUpResponse(
-                followUpQuestion));
+        var response = new GenerateFollowUpResponse(
+            question.Id,
+            question.Order,
+            followUpQuestion,
+            question.Competencies
+                .Select(x => x)
+                .ToArray(),
+            sessionRound.Type.ToString(),
+            sessionRound.DurationInMinutes,
+            true);
+
+        return Result<GenerateFollowUpResponse?>.Success(
+            response);
     }
 
     private static Result<JsonArray> ParseConversation(
