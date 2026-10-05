@@ -1,8 +1,6 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TAO.Application.AssessmentQuestionEvaluations.Evaluate;
-using TAO.Application.AssessmentQuestions.FollowUp;
-using TAO.Application.AssessmentSessions.Advance;
 using TAO.Application.Common.Interfaces;
 using TAO.Domain.Entities;
 using TAO.SharedKernel;
@@ -10,26 +8,15 @@ using TAO.SharedKernel.Results;
 
 namespace TAO.Application.AssessmentQuestions.Complete;
 
-internal sealed class CompleteAssessmentQuestionCommandHandler
+internal sealed class CompleteAssessmentQuestionCommandHandler(
+    IApplicationDbContext context,
+    ISender sender,
+    ICurrentUser currentUser)
     : IRequestHandler<
         CompleteAssessmentQuestionCommand,
-        Result<AdvanceAssessmentSessionResponse>>
+        Result<CompleteAssessmentQuestionResponse>>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly ISender _sender;
-    private readonly ICurrentUser _currentUser;
-
-    public CompleteAssessmentQuestionCommandHandler(
-        IApplicationDbContext context,
-        ISender sender,
-        ICurrentUser currentUser)
-    {
-        _context = context;
-        _sender = sender;
-        _currentUser = currentUser;
-    }
-
-    public async Task<Result<AdvanceAssessmentSessionResponse>> Handle(
+    public async Task<Result<CompleteAssessmentQuestionResponse>> Handle(
         CompleteAssessmentQuestionCommand request,
         CancellationToken cancellationToken)
     {
@@ -37,143 +24,122 @@ internal sealed class CompleteAssessmentQuestionCommandHandler
         // 1. Validate authentication
         // ---------------------------------------------------------
 
-        if (!_currentUser.IsAuthenticated ||
-            _currentUser.UserId is null ||
-            _currentUser.OrganizationId is null)
+        if (!currentUser.IsAuthenticated ||
+            currentUser.UserId is null ||
+            currentUser.OrganizationId is null)
         {
-            return Result<AdvanceAssessmentSessionResponse>.Failure(
+            return Result<CompleteAssessmentQuestionResponse>.Failure(
                 Error.Unauthorized(
-                    "AssessmentEvaluation.Unauthorized",
+                    "AssessmentQuestion.Unauthorized",
                     "The current user is not authenticated."));
         }
 
-        var organizationId =
-            _currentUser.OrganizationId.Value;
+        var organizationId = currentUser.OrganizationId.Value;
 
         // ---------------------------------------------------------
         // 2. Load question with tenant isolation
-        //
-        // AssessmentQuestion does not have OrganizationId.
-        //
-        // Question
-        //    -> SessionRound
-        //    -> Session
-        //    -> CandidateApplication
-        //    -> Organization
         // ---------------------------------------------------------
 
         var question = await (
-            from q in _context.Set<AssessmentQuestion>()
+            from q in context.Set<AssessmentQuestion>()
 
-            join sessionRound in _context
+            join sessionRound in context
                 .Set<AssessmentSessionRound>()
                 on q.AssessmentSessionRoundId
                     equals sessionRound.Id
 
-            join sessionLocal in _context
+            join sessionLocal in context
                 .Set<AssessmentSession>()
                 on sessionRound.AssessmentSessionId
                     equals sessionLocal.Id
 
-            join candidateApplication in _context
+            join candidateApplication in context
                 .Set<CandidateApplication>()
                 on sessionLocal.CandidateApplicationId
                     equals candidateApplication.Id
 
             where q.Id == request.AssessmentQuestionId
-                  && candidateApplication.OrganizationId
-                      == organizationId
+                  && candidateApplication.OrganizationId == organizationId
 
             select q
-        ).FirstOrDefaultAsync(
-            cancellationToken);
+        ).FirstOrDefaultAsync(cancellationToken);
 
         if (question is null)
         {
-            return Result<AdvanceAssessmentSessionResponse>.Failure(
+            return Result<CompleteAssessmentQuestionResponse>.Failure(
                 Error.NotFound(
                     "AssessmentQuestion.NotFound",
                     $"Assessment question '{request.AssessmentQuestionId}' was not found."));
         }
 
         // ---------------------------------------------------------
-        // 3. Find the assessment session for which this is the
-        //    current question
-        //
-        // IMPORTANT:
-        // Also scope this query through the organization.
+        // 3. Ensure this is the current question
         // ---------------------------------------------------------
 
         var session = await (
-            from assessmentSession in _context
+            from assessmentSession in context
                 .Set<AssessmentSession>()
 
-            join candidateApplication in _context
+            join candidateApplication in context
                 .Set<CandidateApplication>()
                 on assessmentSession.CandidateApplicationId
                     equals candidateApplication.Id
 
-            where assessmentSession.CurrentQuestionId
-                        == question.Id
-                  && assessmentSession.CurrentSessionRoundId
-                        == question.AssessmentSessionRoundId
-                  && candidateApplication.OrganizationId
-                        == organizationId
+            where assessmentSession.CurrentQuestionId == question.Id
+                  && assessmentSession.CurrentSessionRoundId ==
+                     question.AssessmentSessionRoundId
+                  && candidateApplication.OrganizationId == organizationId
 
             select assessmentSession
-        ).FirstOrDefaultAsync(
-            cancellationToken);
+        ).FirstOrDefaultAsync(cancellationToken);
 
         if (session is null)
         {
-            return Result<AdvanceAssessmentSessionResponse>.Failure(
+            return Result<CompleteAssessmentQuestionResponse>.Failure(
                 Error.Validation(
                     "AssessmentQuestion.NotCurrentQuestion",
                     "The assessment question is not the current question for an assessment session."));
         }
 
-        // ---------------------------------------------------------
-        // 4. Complete question
-        // ---------------------------------------------------------
-
         try
         {
-            question.Complete(
-                DateTime.UtcNow);
+            // -----------------------------------------------------
+            // 4. Complete question
+            // -----------------------------------------------------
 
-            await _context.SaveChangesAsync(
-                cancellationToken);
+            question.Complete(DateTime.UtcNow);
+
+            await context.SaveChangesAsync(cancellationToken);
 
             // -----------------------------------------------------
             // 5. Evaluate completed question
             // -----------------------------------------------------
 
-            var evaluationResult = await _sender.Send(
+            var evaluationResult = await sender.Send(
                 new EvaluateAssessmentQuestionCommand(
                     question.Id),
                 cancellationToken);
 
             if (evaluationResult.IsFailure)
             {
-                return Result<AdvanceAssessmentSessionResponse>.Failure(
+                return Result<CompleteAssessmentQuestionResponse>.Failure(
                     evaluationResult.Error!);
             }
 
             // -----------------------------------------------------
-            // 6. Advance assessment session
+            // 6. Do NOT advance here.
             //
-            // This now returns the next question, round information,
-            // or AssessmentCompleted = true.
+            // The UI will explicitly request the next question.
             // -----------------------------------------------------
 
-            return await _sender.Send(
-                new AdvanceAssessmentSessionCommand(
-                    session.Id),
-                cancellationToken);
+            return Result<CompleteAssessmentQuestionResponse>.Success(
+                new CompleteAssessmentQuestionResponse(
+                    question.Id,
+                    IsEvaluated: true));
         }
         catch (InvalidOperationException ex)
         {
-            return Result<AdvanceAssessmentSessionResponse>.Failure(
+            return Result<CompleteAssessmentQuestionResponse>.Failure(
                 Error.Validation(
                     "AssessmentQuestion.CannotComplete",
                     ex.Message));
