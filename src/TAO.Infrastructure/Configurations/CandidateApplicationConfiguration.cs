@@ -52,6 +52,9 @@ public sealed class CandidateApplicationConfiguration : IEntityTypeConfiguration
         builder.Property(x => x.LastScreenedOn)
             .HasColumnType("datetime2(7)");
 
+        builder.Property(x => x.IdentityUserId)
+        .IsRequired(false);
+
         builder.HasOne<Organization>()
             .WithMany()
             .HasForeignKey(x => x.OrganizationId)
@@ -87,5 +90,9 @@ public sealed class CandidateApplicationConfiguration : IEntityTypeConfiguration
             x.CampaignId,
             x.OverallMatchPercentage
         });
+
+        builder.HasIndex(x => x.IdentityUserId)
+    .IsUnique()
+    .HasFilter("[IdentityUserId] IS NOT NULL");
     }
 }

@@ -10,5 +10,8 @@ public interface IIdentityService
         string password,
         CancellationToken cancellationToken);
 
-
+    Task<Result> AddToRoleAsync(
+       Guid userId,
+       string role,
+       CancellationToken cancellationToken);
 }

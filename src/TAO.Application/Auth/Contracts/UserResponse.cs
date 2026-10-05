@@ -2,7 +2,7 @@
 
 public sealed record UserResponse(
     Guid Id,
-    Guid OrganizationId,
+    Guid? OrganizationId,
     string FirstName,
     string LastName,
     string Email,

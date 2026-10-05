@@ -94,6 +94,8 @@ public sealed class CandidateApplication : Entity
 
     public DateTime? LastScreenedOn { get; private set; }
 
+    public Guid? IdentityUserId { get; private set; }
+
     public void UpdateScreeningResult(
         byte overallMatchPercentage,
         bool isRecommended,
@@ -108,6 +110,13 @@ public sealed class CandidateApplication : Entity
         OverallMatchPercentage = overallMatchPercentage;
         IsRecommended = isRecommended;
         LastScreenedOn = screenedOn;
+    }
+
+    public void LinkIdentityUser(Guid identityUserId)
+    {
+        IdentityUserId = Guard.AgainstEmpty(
+            identityUserId,
+            nameof(identityUserId));
     }
 
 }

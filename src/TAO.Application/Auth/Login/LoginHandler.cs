@@ -28,7 +28,51 @@ public sealed class LoginHandler(
                 x => x.Email == email,
                 cancellationToken);
 
-        if (user is null)
+        if (user is not null)
+        {
+            if (user.Status != UserStatus.Active)
+            {
+                return Result<UserResponse>.Failure(
+                    new Error(
+                        "Auth.UserInactive",
+                        "The user account is inactive."));
+            }
+
+            var authenticated =
+                await authenticationService.SignInAsync(
+                    email,
+                    request.Password,
+                    cancellationToken);
+
+            if (!authenticated)
+            {
+                return Result<UserResponse>.Failure(
+                    new Error(
+                        "Auth.InvalidCredentials",
+                        "Invalid email or password."));
+            }
+
+            return Result<UserResponse>.Success(
+                new UserResponse(
+                    user.Id,
+                    user.OrganizationId,
+                    user.FirstName,
+                    user.LastName,
+                    user.Email,
+                    user.Role.ToString(),
+                    user.Status.ToString()));
+        }
+
+        var candidateApplication = await dbContext
+            .Set<CandidateApplication>()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(
+                x =>
+                    x.Email == email &&
+                    x.IdentityUserId != null,
+                cancellationToken);
+
+        if (candidateApplication is null)
         {
             return Result<UserResponse>.Failure(
                 new Error(
@@ -36,21 +80,13 @@ public sealed class LoginHandler(
                     "Invalid email or password."));
         }
 
-        if (user.Status != UserStatus.Active)
-        {
-            return Result<UserResponse>.Failure(
-                new Error(
-                    "Auth.UserInactive",
-                    "The user account is inactive."));
-        }
-
-        var authenticated =
+        var candidateAuthenticated =
             await authenticationService.SignInAsync(
                 email,
                 request.Password,
                 cancellationToken);
 
-        if (!authenticated)
+        if (!candidateAuthenticated)
         {
             return Result<UserResponse>.Failure(
                 new Error(
@@ -58,15 +94,14 @@ public sealed class LoginHandler(
                     "Invalid email or password."));
         }
 
-        var response = new UserResponse(
-            user.Id,
-            user.OrganizationId,
-            user.FirstName,
-            user.LastName,
-            user.Email,
-            user.Role.ToString(),
-            user.Status.ToString());
-
-        return Result<UserResponse>.Success(response);
+        return Result<UserResponse>.Success(
+            new UserResponse(
+                candidateApplication.IdentityUserId!.Value,
+                null,
+                candidateApplication.CandidateName,
+                string.Empty,
+                candidateApplication.Email,
+                UserRole.Candidate.ToString(),
+                "Active"));
     }
 }

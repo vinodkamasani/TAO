@@ -4,5 +4,6 @@ public enum UserRole : byte
 {
     Administrator = 1,
     Recruiter = 2,
-    HiringManager = 3
+    HiringManager = 3,
+    Candidate = 4
 }
