@@ -6,6 +6,7 @@ using TAO.Api.Endpoints.AssessmentQuestions.Complete;
 using TAO.Api.Endpoints.AssessmentQuestions.FollowUp;
 using TAO.Api.Endpoints.AssessmentQuestions.Skip;
 using TAO.Api.Endpoints.AssessmentSessions;
+using TAO.Api.Endpoints.AssessmentSessions.Advance;
 using TAO.Api.Endpoints.AssessmentSessions.Workflow;
 using TAO.Api.Endpoints.Auth;
 using TAO.Api.Endpoints.Campaigns;
@@ -39,6 +40,7 @@ public static class EndpointExtensions
         app.MapAuthEndpoints();
         app.MapGetAssessmentWorkflowEndpoint();
         app.MapCandidateSignupEndpoint();
+        app.MapAdvanceAssessmentSessionEndpoint();
         return app;
     }
 }
