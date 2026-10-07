@@ -22,7 +22,7 @@ public sealed class GetAssessmentSessionQueryHandler(
         // 1. Validate authentication
         // ---------------------------------------------------------
 
-        if (!currentUser.IsAuthenticated)
+        if (!currentUser.IsAuthenticated || currentUser.UserId is null)
         {
             return Result<AssessmentSessionResponse>.Failure(
                 Error.Unauthorized(
@@ -30,19 +30,7 @@ public sealed class GetAssessmentSessionQueryHandler(
                     "The current user is not authenticated."));
         }
 
-        // ---------------------------------------------------------
-        // 2. Get current user's organization
-        // ---------------------------------------------------------
-
-        var organizationId = currentUser.OrganizationId;
-
-        if (organizationId is null)
-        {
-            return Result<AssessmentSessionResponse>.Failure(
-                Error.Unauthorized(
-                    "AssessmentSession.OrganizationNotFound",
-                    "The current user's organization could not be identified."));
-        }
+       
 
         // ---------------------------------------------------------
         // 3. Load assessment session with tenant isolation
@@ -64,8 +52,7 @@ public sealed class GetAssessmentSessionQueryHandler(
                     equals candidateApplication.Id
 
             where assessmentSession.Id == request.AssessmentSessionId
-                  && candidateApplication.OrganizationId
-                      == organizationId.Value
+                  && candidateApplication.IdentityUserId == currentUser.UserId.Value
 
             select assessmentSession
         ).FirstOrDefaultAsync(cancellationToken);

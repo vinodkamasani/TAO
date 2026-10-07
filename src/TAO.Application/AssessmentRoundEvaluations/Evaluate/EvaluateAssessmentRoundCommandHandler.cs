@@ -34,7 +34,7 @@ internal sealed class EvaluateAssessmentRoundCommandHandler
         // 1. Validate authentication
         // ---------------------------------------------------------
 
-        if (!_currentUser.IsAuthenticated)
+        if (!_currentUser.IsAuthenticated || _currentUser.UserId is null)
         {
             return Result<Result>.Failure(
                 Error.Unauthorized(
@@ -42,19 +42,7 @@ internal sealed class EvaluateAssessmentRoundCommandHandler
                     "The current user is not authenticated."));
         }
 
-        // ---------------------------------------------------------
-        // 2. Get organization from authenticated user
-        // ---------------------------------------------------------
-
-        var organizationId = _currentUser.OrganizationId;
-
-        if (organizationId is null)
-        {
-            return Result<GenerateAssessmentQuestionResponse>.Failure(
-                Error.Unauthorized(
-                    "AssessmentQuestion.OrganizationNotFound",
-                    "The current user's organization could not be identified."));
-        }
+        
 
         var sessionRound = await (
      from round in _context.Set<AssessmentSessionRound>()
@@ -66,7 +54,7 @@ internal sealed class EvaluateAssessmentRoundCommandHandler
          on session.CandidateApplicationId equals candidateApplication.Id
 
      where round.Id == request.AssessmentSessionRoundId
-           && candidateApplication.OrganizationId == organizationId
+           && candidateApplication.IdentityUserId == _currentUser.UserId.Value
 
      select round
  ).FirstOrDefaultAsync(cancellationToken);

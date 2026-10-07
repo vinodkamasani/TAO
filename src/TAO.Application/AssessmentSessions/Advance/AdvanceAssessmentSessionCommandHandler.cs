@@ -41,7 +41,7 @@ internal sealed class AdvanceAssessmentSessionCommandHandler
         // 1. Validate authentication
         // ---------------------------------------------------------
 
-        if (!_currentUser.IsAuthenticated)
+        if (!_currentUser.IsAuthenticated || _currentUser.UserId is null)
         {
             return Result<AdvanceAssessmentSessionResponse>.Failure(
                 Error.Unauthorized(
@@ -49,20 +49,7 @@ internal sealed class AdvanceAssessmentSessionCommandHandler
                     "The current user is not authenticated."));
         }
 
-        // ---------------------------------------------------------
-        // 2. Get organization from authenticated user
-        // ---------------------------------------------------------
-
-        var organizationId = _currentUser.OrganizationId;
-
-        if (organizationId is null)
-        {
-            return Result<AdvanceAssessmentSessionResponse>.Failure(
-                Error.Unauthorized(
-                    "AssessmentSession.OrganizationNotFound",
-                    "The current user's organization could not be identified."));
-        }
-
+    
         // ---------------------------------------------------------
         // 3. Load assessment session with tenant isolation
         // ---------------------------------------------------------
@@ -78,8 +65,8 @@ internal sealed class AdvanceAssessmentSessionCommandHandler
                     equals candidateApplication.Id
 
             where assessmentSession.Id == request.AssessmentSessionId
-                  && candidateApplication.OrganizationId
-                      == organizationId.Value
+                  && candidateApplication.IdentityUserId
+                      == _currentUser.UserId.Value
 
             select assessmentSession
         ).FirstOrDefaultAsync(cancellationToken);

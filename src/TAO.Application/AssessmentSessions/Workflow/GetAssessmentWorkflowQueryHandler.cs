@@ -23,26 +23,12 @@ public sealed class GetAssessmentWorkflowQueryHandler(
         // 1. Validate authentication
         // ---------------------------------------------------------
 
-        if (!currentUser.IsAuthenticated)
+        if (!currentUser.IsAuthenticated || currentUser.UserId is null)
         {
             return Result<AssessmentWorkflowResponse>.Failure(
                 Error.Unauthorized(
                     "AssessmentWorkflow.Unauthorized",
                     "The current user is not authenticated."));
-        }
-
-        // ---------------------------------------------------------
-        // 2. Get organization from authenticated user
-        // ---------------------------------------------------------
-
-        var organizationId = currentUser.OrganizationId;
-
-        if (organizationId is null)
-        {
-            return Result<AssessmentWorkflowResponse>.Failure(
-                Error.Unauthorized(
-                    "AssessmentWorkflow.OrganizationNotFound",
-                    "The current user's organization could not be identified."));
         }
 
         // ---------------------------------------------------------
@@ -64,8 +50,7 @@ public sealed class GetAssessmentWorkflowQueryHandler(
                     equals candidateApplication.Id
 
             where assessmentSession.Id == request.AssessmentSessionId
-                  && candidateApplication.OrganizationId
-                      == organizationId.Value
+                  && candidateApplication.IdentityUserId == currentUser.UserId.Value
 
             select assessmentSession
         ).FirstOrDefaultAsync(cancellationToken);

@@ -38,8 +38,7 @@ internal sealed class GenerateFollowUpCommandHandler
         CancellationToken cancellationToken)
     {
         if (!_currentUser.IsAuthenticated ||
-            _currentUser.UserId is null ||
-            _currentUser.OrganizationId is null)
+            _currentUser.UserId is null)
         {
             return Result<GenerateFollowUpResponse?>.Failure(
                 Error.Unauthorized(
@@ -47,7 +46,6 @@ internal sealed class GenerateFollowUpCommandHandler
                     "The current user is not authenticated."));
         }
 
-        var organizationId = _currentUser.OrganizationId.Value;
 
         var question = await (
             from q in _context.Set<AssessmentQuestion>()
@@ -65,7 +63,7 @@ internal sealed class GenerateFollowUpCommandHandler
                 on session.CandidateApplicationId equals candidateApplication.Id
 
             where q.Id == request.AssessmentQuestionId
-                  && candidateApplication.OrganizationId == organizationId
+                  && candidateApplication.IdentityUserId == _currentUser.UserId.Value
 
             select q
         ).FirstOrDefaultAsync(cancellationToken);

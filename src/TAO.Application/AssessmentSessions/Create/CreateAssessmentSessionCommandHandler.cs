@@ -37,7 +37,8 @@ internal sealed class CreateAssessmentSessionCommandHandler
         // 1. Validate authentication
         // ---------------------------------------------------------
 
-        if (!_currentUser.IsAuthenticated)
+        if (!_currentUser.IsAuthenticated ||
+                _currentUser.UserId is null)
         {
             return Result<AssessmentSessionResponse>.Failure(
                 Error.Unauthorized(
@@ -45,34 +46,14 @@ internal sealed class CreateAssessmentSessionCommandHandler
                     "The current user is not authenticated."));
         }
 
-        // ---------------------------------------------------------
-        // 2. Get organization from authenticated user
-        // ---------------------------------------------------------
-
-        var organizationId = _currentUser.OrganizationId;
-
-        if (organizationId is null)
-        {
-            return Result<AssessmentSessionResponse>.Failure(
-                Error.Unauthorized(
-                    "AssessmentSession.OrganizationNotFound",
-                    "The current user's organization could not be identified."));
-        }
-
-        // ---------------------------------------------------------
-        // 3. Load Candidate Application
-        //
-        // IMPORTANT:
-        // OrganizationId comes from the authenticated user's claims.
-        // Never trust OrganizationId from the request.
-        // ---------------------------------------------------------
+       
 
         var candidateApplication = await _context
             .Set<CandidateApplication>()
             .FirstOrDefaultAsync(
                 x =>
-                    x.Id == request.CandidateApplicationId
-                    && x.OrganizationId == organizationId.Value,
+                    x.Id == request.CandidateApplicationId &&
+                   x.IdentityUserId == _currentUser.UserId.Value,
                 cancellationToken);
 
         if (candidateApplication is null)
@@ -90,12 +71,13 @@ internal sealed class CreateAssessmentSessionCommandHandler
         // ---------------------------------------------------------
 
         var assessmentStrategy = await _context
-            .Set<AssessmentStrategy>()
-            .FirstOrDefaultAsync(
-                x =>
-                    x.Id == request.AssessmentStrategyId
-                    && x.OrganizationId == organizationId.Value,
-                cancellationToken);
+       .Set<AssessmentStrategy>()
+       .FirstOrDefaultAsync(
+           x =>
+               x.Id == request.AssessmentStrategyId &&
+               x.CampaignId == candidateApplication.CampaignId &&
+               x.Status == AssessmentStrategyStatus.Approved,
+           cancellationToken);
 
         if (assessmentStrategy is null)
         {

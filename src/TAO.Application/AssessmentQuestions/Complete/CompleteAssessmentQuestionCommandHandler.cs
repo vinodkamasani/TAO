@@ -25,8 +25,7 @@ internal sealed class CompleteAssessmentQuestionCommandHandler(
         // ---------------------------------------------------------
 
         if (!currentUser.IsAuthenticated ||
-            currentUser.UserId is null ||
-            currentUser.OrganizationId is null)
+            currentUser.UserId is null )
         {
             return Result<CompleteAssessmentQuestionResponse>.Failure(
                 Error.Unauthorized(
@@ -34,7 +33,7 @@ internal sealed class CompleteAssessmentQuestionCommandHandler(
                     "The current user is not authenticated."));
         }
 
-        var organizationId = currentUser.OrganizationId.Value;
+        var userId = currentUser.UserId.Value;
 
         // ---------------------------------------------------------
         // 2. Load question with tenant isolation
@@ -59,7 +58,7 @@ internal sealed class CompleteAssessmentQuestionCommandHandler(
                     equals candidateApplication.Id
 
             where q.Id == request.AssessmentQuestionId
-                  && candidateApplication.OrganizationId == organizationId
+                  && candidateApplication.IdentityUserId == userId
 
             select q
         ).FirstOrDefaultAsync(cancellationToken);
@@ -88,7 +87,7 @@ internal sealed class CompleteAssessmentQuestionCommandHandler(
             where assessmentSession.CurrentQuestionId == question.Id
                   && assessmentSession.CurrentSessionRoundId ==
                      question.AssessmentSessionRoundId
-                  && candidateApplication.OrganizationId == organizationId
+                  && candidateApplication.IdentityUserId == userId
 
             select assessmentSession
         ).FirstOrDefaultAsync(cancellationToken);

@@ -33,8 +33,7 @@ internal sealed class RecordCodeResponseCommandHandler
         // ---------------------------------------------------------
 
         if (!_currentUser.IsAuthenticated ||
-            _currentUser.UserId is null ||
-            _currentUser.OrganizationId is null)
+            _currentUser.UserId is null )
         {
             return Result.Failure(
                 Error.Unauthorized(
@@ -42,8 +41,7 @@ internal sealed class RecordCodeResponseCommandHandler
                     "The current user is not authenticated."));
         }
 
-        var organizationId =
-            _currentUser.OrganizationId.Value;
+ 
 
         // ---------------------------------------------------------
         // 2. Load question with tenant isolation
@@ -76,8 +74,8 @@ internal sealed class RecordCodeResponseCommandHandler
                     equals candidateApplication.Id
 
             where q.Id == request.AssessmentQuestionId
-                  && candidateApplication.OrganizationId
-                      == organizationId
+                  && candidateApplication.IdentityUserId
+                      == _currentUser.UserId.Value
 
             select q
         ).FirstOrDefaultAsync(

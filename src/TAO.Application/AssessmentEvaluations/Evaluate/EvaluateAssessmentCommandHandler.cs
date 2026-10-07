@@ -34,8 +34,7 @@ internal sealed class EvaluateAssessmentCommandHandler
     {
 
         if (!_currentUser.IsAuthenticated ||
-            _currentUser.UserId is null ||
-            _currentUser.OrganizationId is null)
+            _currentUser.UserId is null )
         {
             return Result.Failure(
                 Error.Unauthorized(
@@ -43,14 +42,13 @@ internal sealed class EvaluateAssessmentCommandHandler
                     "The current user is not authenticated."));
         }
 
-        var organizationId = _currentUser.OrganizationId.Value;
 
         var session = await (
     from sessions in _context.Set<AssessmentSession>()
     join application in _context.Set<CandidateApplication>()
         on sessions.CandidateApplicationId equals application.Id
     where sessions.Id == request.AssessmentSessionId
-          && application.OrganizationId == organizationId
+          && application.IdentityUserId == _currentUser.UserId.Value
     select sessions)
     .FirstOrDefaultAsync(cancellationToken);
 
