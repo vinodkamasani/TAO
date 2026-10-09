@@ -53,12 +53,13 @@ internal sealed class GetAssessmentQuestionCodeQueryHandler
         }
 
         if (_currentUser.Role is not UserRole.Recruiter
-            and not UserRole.HiringManager)
+            and not UserRole.HiringManager
+            and not UserRole.Administrator)
         {
             return Result<GetAssessmentQuestionCodeResponse>.Failure(
                 Error.Unauthorized(
                     "AssessmentResults.Forbidden",
-                    "Only recruiters and hiring managers can view assessment results."));
+                    "Only recruiters, hiring managers, and administrators can view assessment results."));
         }
 
         var organizationId = _currentUser.OrganizationId.Value;

@@ -38,7 +38,7 @@ internal sealed class GetAssessmentQuestionQueryHandler(
         // ---------------------------------------------------------
 
         if (currentUser.Role is not
-            (UserRole.Recruiter or UserRole.HiringManager))
+            (UserRole.Recruiter or UserRole.HiringManager or UserRole.Administrator))
         {
             return Result<GetAssessmentQuestionResponse>.Failure(
                 Error.Forbidden(

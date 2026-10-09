@@ -42,7 +42,7 @@ internal sealed class GetAssessmentSummaryQueryHandler(
         // ---------------------------------------------------------
 
         if (currentUser.Role is not
-            (UserRole.Recruiter or UserRole.HiringManager))
+            (UserRole.Recruiter or UserRole.HiringManager or UserRole.Administrator))
         {
             return Result<GetAssessmentSummaryResponse>.Failure(
                 Error.Forbidden(
