@@ -10,6 +10,7 @@ using TAO.Api.Endpoints.AssessmentResults.GetAssessmentQuestion;
 using TAO.Api.Endpoints.AssessmentResults.GetAssessmentQuestionCode;
 using TAO.Api.Endpoints.AssessmentResults.GetAssessmentQuestionConversation;
 using TAO.Api.Endpoints.AssessmentResults.GetAssessmentRound;
+using TAO.Api.Endpoints.AssessmentResults.GetCompletedAssessmentCandidatesEndpoint;
 using TAO.Api.Endpoints.AssessmentSessions;
 using TAO.Api.Endpoints.AssessmentSessions.Advance;
 using TAO.Api.Endpoints.AssessmentSessions.Workflow;
@@ -53,6 +54,7 @@ public static class EndpointExtensions
         app.MapGetAssessmentQuestionEndpoint();
         app.MapGetAssessmentQuestionConversationEndpoint();
         app.MapGetAssessmentQuestionCodeEndpoint();
+        app.MapGetCompletedAssessmentCandidatesEndpoint();
         return app;
     }
 }
