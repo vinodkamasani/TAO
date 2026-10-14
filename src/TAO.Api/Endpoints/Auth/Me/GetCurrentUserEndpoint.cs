@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using TAO.Api.Extensions;
 using TAO.Application.Auth.Contracts;
 using TAO.Application.Auth.Me;
 
@@ -23,17 +24,13 @@ public static class GetCurrentUserEndpoint
 
     private static async Task<IResult> HandleAsync(
         ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var result = await sender.Send(
             new GetCurrentUserQuery(),
             cancellationToken);
 
-        if (!result.IsSuccess)
-        {
-            return Results.Unauthorized();
-        }
-
-        return Results.Ok(result.Value);
+        return result.ToApiResult(httpContext, "Current user retrieved successfully.");
     }
 }

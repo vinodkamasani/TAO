@@ -18,9 +18,10 @@ public static class CreateCampaignEndpoint
     }
 
     private static async Task<IResult> HandleAsync(
-        [FromBody] CreateCampaignRequest request,
-        [FromServices] ISender sender,
-        CancellationToken cancellationToken)
+      [FromBody] CreateCampaignRequest request,
+      [FromServices] ISender sender,
+      HttpContext httpContext,
+      CancellationToken cancellationToken)
     {
         var command = new CreateCampaignCommand(
             request.OrganizationId,
@@ -34,13 +35,9 @@ public static class CreateCampaignEndpoint
             command,
             cancellationToken);
 
-        if (result.IsFailure)
-        {
-            return Results.Problem(
-                result.Error?.Message ?? String.Empty);
-        }
-
-        return result.ToCreatedResult(
-            $"/api/campaigns/{result.Value}");
+        return result.ToCreatedApiResult(
+            httpContext,
+            campaignId => $"/api/campaigns/{campaignId}",
+            "Campaign created successfully.");
     }
 }

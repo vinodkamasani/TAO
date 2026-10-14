@@ -23,6 +23,7 @@ public static class RecordCandidateResponseEndpoint
         Guid assessmentQuestionId,
         [FromBody] RecordCandidateResponseRequest request,
         [FromServices] ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var command = new RecordCandidateResponseCommand(
@@ -33,12 +34,7 @@ public static class RecordCandidateResponseEndpoint
             command,
             cancellationToken);
 
-        if (result.IsFailure)
-        {
-            return Results.Problem(
-                result.Error?.Message ?? String.Empty);
-        }
-
-        return Results.Ok(result.Value);
+       return result.ToApiResult(httpContext,
+           "Candidate response recorded successfully.");
     }
 }

@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using TAO.Api.Extensions;
 using TAO.Application.Candidates.GetAssessmentContext;
 
 namespace TAO.Api.Endpoints.Candidates.Assessment;
@@ -26,6 +27,7 @@ public static class GetCandidateAssessmentContextEndpoint
     private static async Task<IResult> HandleAsync(
         Guid invitationId,
         ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var result = await sender.Send(
@@ -33,13 +35,9 @@ public static class GetCandidateAssessmentContextEndpoint
                 invitationId),
             cancellationToken);
 
-        if (result.IsFailure)
-        {
-            return Results.Problem(
-                detail: result.Error?.ToString(),
-                statusCode: StatusCodes.Status400BadRequest);
-        }
-
-        return Results.Ok(result.Value);
+        return result.ToApiResult(httpContext,
+              "Candidate assessment context retrieved successfully.");
     }
 }
+
+  

@@ -22,6 +22,7 @@ public static class SkipAssessmentQuestionEndpoint
     private static async Task<IResult> HandleAsync(
         Guid assessmentQuestionId,
         [FromServices] ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var result = await sender.Send(
@@ -29,12 +30,6 @@ public static class SkipAssessmentQuestionEndpoint
                 assessmentQuestionId),
             cancellationToken);
 
-        if (result.IsFailure)
-        {
-            // Use the error's ToString() to include something useful; adjust status code as appropriate.
-            return Results.Problem(detail: result.Error?.ToString(), statusCode: 400);
-        }
-
-        return result.ToNoContentResult();
+     return result.ToApiResult(httpContext, "Assessment question skipped successfully.");
     }
 }

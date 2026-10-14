@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using TAO.Api.Extensions;
 using TAO.Application.AssessmentStrategies.Contracts;
 using TAO.Application.AssessmentStrategies.Update;
 
@@ -34,6 +35,7 @@ public static class UpdateAssessmentStrategyEndpoint
         Guid assessmentStrategyId,
         [FromBody] UpdateAssessmentStrategyRequest request,
         ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var command = new UpdateAssessmentStrategyCommand(
@@ -61,11 +63,8 @@ public static class UpdateAssessmentStrategyEndpoint
             cancellationToken);
 
 
-        if (result.IsFailure)
-        {
-            return Results.Problem(
-                result.Error?.Message ?? String.Empty);
-        }
-        return Results.Ok(result.Value);
+      return result.ToApiResult(
+            httpContext,
+            "Assessment strategy updated successfully.");
     }
 }

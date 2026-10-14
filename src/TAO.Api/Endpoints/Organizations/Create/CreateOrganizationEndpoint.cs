@@ -22,24 +22,34 @@ public static class CreateOrganizationEndpoint
         return app;
     }
 
+
     private static async Task<IResult> HandleAsync(
         [FromBody] CreateOrganizationRequest request,
         ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var command = new CreateOrganizationCommand(
             request.Name,
             request.Code);
 
-        var result = await sender.Send(command, cancellationToken);
+        var result = await sender.Send(
+            command,
+            cancellationToken);
 
         if (result.IsFailure)
         {
-            // Use the error's ToString() to include something useful; adjust status code as appropriate.
-            return Results.Problem(detail: result.Error?.ToString(), statusCode: 400);
+            return result.ToApiFailure(
+                httpContext,
+                "Organization.CreateFailed",
+                "Failed to create organization.",
+                StatusCodes.Status500InternalServerError);
         }
 
-        return result.ToCreatedResult(
-      $"/api/organizations/{result.Value}");
+        return result.ToCreatedApiResult(
+            httpContext,
+            organizationId => $"/api/organizations/{organizationId}",
+            "Organization created successfully.");
     }
+
 }

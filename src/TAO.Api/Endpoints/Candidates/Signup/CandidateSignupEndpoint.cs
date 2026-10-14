@@ -1,5 +1,8 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using TAO.Api.Contracts;
+using TAO.Api.Extensions;
 using TAO.Application.Candidates.Signup;
 using TAO.Application.Common.Interfaces;
 
@@ -24,11 +27,14 @@ public static class CandidateSignupEndpoint
         return app;
     }
 
+
+
     private static async Task<IResult> HandleAsync(
         Guid invitationId,
         CandidateSignupRequest request,
         [FromServices] ISender sender,
         [FromServices] IAuthenticationService authenticationService,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var command = new CandidateSignupCommand(
@@ -42,9 +48,7 @@ public static class CandidateSignupEndpoint
 
         if (result.IsFailure)
         {
-            return Results.Problem(
-                detail: result.Error?.ToString(),
-                statusCode: StatusCodes.Status400BadRequest);
+            return result.ToApiResult(httpContext);
         }
 
         var signInSucceeded =
@@ -55,13 +59,15 @@ public static class CandidateSignupEndpoint
 
         if (!signInSucceeded)
         {
-            return Results.Problem(
-                detail:
-                    "The candidate account was created, " +
-                    "but the candidate could not be signed in.",
-                statusCode: StatusCodes.Status500InternalServerError);
+            return result.ToApiFailure(
+                httpContext,
+                "Authentication.SignInFailed",
+                "The candidate account was created, but the candidate could not be signed in.",
+                StatusCodes.Status500InternalServerError);
         }
 
-        return Results.NoContent();
+        return result.ToApiSuccess(httpContext, "Candidate registered and signed in successfully.");
     }
+
+
 }

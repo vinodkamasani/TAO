@@ -24,6 +24,7 @@ public static class GetHiringStrategyEndpoint
     private static async Task<IResult> HandleAsync(
         Guid campaignId,
         ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var query = new GetHiringStrategyQuery(campaignId);
@@ -32,12 +33,6 @@ public static class GetHiringStrategyEndpoint
             query,
             cancellationToken);
 
-        if (result.IsFailure)
-        {
-            return Results.Problem(
-                result.Error?.Message ?? String.Empty);
-        }
-
-        return result.ToOkResult();
+        return result.ToApiResult(httpContext, "Hiring strategy retrieved successfully.");
     }
 }

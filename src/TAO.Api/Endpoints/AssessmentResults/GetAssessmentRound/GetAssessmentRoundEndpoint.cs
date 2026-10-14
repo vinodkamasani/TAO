@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using TAO.Api.Extensions;
 using TAO.Application.AssessmentResults.GetAssessmentRound;
 
 namespace TAO.Api.Endpoints.AssessmentResults.GetAssessmentRound;
@@ -25,6 +26,7 @@ public static class GetAssessmentRoundEndpoint
         Guid assessmentSessionId,
         Guid roundId,
         ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var result = await sender.Send(
@@ -33,13 +35,6 @@ public static class GetAssessmentRoundEndpoint
                 roundId),
             cancellationToken);
 
-        if (result.IsFailure)
-        {
-            return Results.Problem(
-                detail: result.Error?.ToString(),
-                statusCode: StatusCodes.Status400BadRequest);
-        }
-
-        return Results.Ok(result.Value);
+      return result.ToApiResult(httpContext, "Assessment round details retrieved successfully.");
     }
 }

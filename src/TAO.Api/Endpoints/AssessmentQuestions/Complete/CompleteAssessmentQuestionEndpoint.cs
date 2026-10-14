@@ -22,6 +22,7 @@ public static class CompleteAssessmentQuestionEndpoint
     private static async Task<IResult> HandleAsync(
         Guid assessmentQuestionId,
         [FromServices] ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var result = await sender.Send(
@@ -35,6 +36,6 @@ public static class CompleteAssessmentQuestionEndpoint
                 result.Error?.Message ?? String.Empty);
         }
 
-        return result.ToNoContentResult();
+        return result.ToApiResult(httpContext, "Assessment question completed successfully.");
     }
 }

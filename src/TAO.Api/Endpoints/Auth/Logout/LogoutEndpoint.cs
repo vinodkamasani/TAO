@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using TAO.Api.Extensions;
 using TAO.Application.Auth.Logout;
 
 namespace TAO.Api.Endpoints.Auth.Logout;
@@ -22,12 +23,13 @@ public static class LogoutEndpoint
 
     private static async Task<IResult> HandleAsync(
         ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
-        await sender.Send(
+       var result = await sender.Send(
             new LogoutCommand(),
             cancellationToken);
 
-        return Results.NoContent();
+       return result.ToApiResult(httpContext, "Logout successful");
     }
 }

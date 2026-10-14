@@ -21,6 +21,7 @@ public static class GetCampaignsEndpoint
 
     private static async Task<IResult> HandleAsync(
         ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var query = new GetCampaignsQuery();
@@ -28,14 +29,8 @@ public static class GetCampaignsEndpoint
         var result = await sender.Send(
             query,
             cancellationToken);
-
-        if (result.IsFailure)
-        {
-            return Results.Problem(
-                result.Error?.Message ?? String.Empty);
-        }
-
-
-        return result.ToOkResult();
+        return result.ToApiResult(
+                  httpContext,
+                  "Campaigns retrieved successfully.");
     }
 }

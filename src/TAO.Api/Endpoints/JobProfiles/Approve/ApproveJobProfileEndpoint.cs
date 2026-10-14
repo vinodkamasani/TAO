@@ -26,6 +26,7 @@ public static class ApproveJobProfileEndpoint
            Guid jobProfileId,
            [FromBody] ApproveJobProfileRequest request,
            ISender sender,
+           HttpContext httpContext,
            CancellationToken cancellationToken)
     {
         var command = new ApproveJobProfileCommand(
@@ -36,12 +37,7 @@ public static class ApproveJobProfileEndpoint
             command,
             cancellationToken);
 
-        if (result.IsFailure)
-        {
-            // Use the error's ToString() to include something useful; adjust status code as appropriate.
-            return Results.Problem(detail: result.Error?.ToString(), statusCode: 400);
-        }
-
-        return result.ToNoContentResult();
+      return result.ToApiResult(httpContext,
+          "Job Profile approved successfully.");
     }
 }

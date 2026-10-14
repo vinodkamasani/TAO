@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using TAO.Api.Extensions;
 using TAO.Application.AssessmentStrategies.Contracts;
 using TAO.Application.AssessmentStrategies.Create;
 using TAO.SharedKernel.Results;
@@ -31,26 +32,21 @@ public static class CreateAssessmentStrategyEndpoint
     }
 
     private static async Task<IResult> HandleAsync(
-        Guid campaignId,
-        ISender sender,
-        CancellationToken cancellationToken)
+     Guid campaignId,
+     ISender sender,
+     HttpContext httpContext,
+     CancellationToken cancellationToken)
     {
-        var command =
-            new CreateAssessmentStrategyCommand(
-                campaignId);
+        var command = new CreateAssessmentStrategyCommand(
+            campaignId);
 
         var result = await sender.Send(
             command,
             cancellationToken);
 
-        if (result.IsFailure)
-        {
-            return Results.Problem(
-                result.Error?.Message?? String.Empty);
-        }
-
-        return Results.Created(
-            $"/api/campaigns/{campaignId}/assessment-strategy",
-            result.Value);
+        return result.ToCreatedApiResult(
+            httpContext,
+            _ => $"/api/campaigns/{campaignId}/assessment-strategy",
+            "Assessment strategy created successfully.");
     }
 }

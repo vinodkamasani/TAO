@@ -26,9 +26,11 @@ public static class CreateUserEndpoint
         return app;
     }
 
+
     private static async Task<IResult> HandleAsync(
         [FromBody] CreateUserRequest request,
         ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var command = new CreateUserCommand(
@@ -44,12 +46,13 @@ public static class CreateUserEndpoint
 
         if (result.IsFailure)
         {
-            // Use the error's ToString() to include something useful; adjust status code as appropriate.
-            return Results.Problem(detail: result.Error?.ToString(), statusCode: 400);
+            return result.ToApiResult(httpContext);
         }
 
-        return Results.Created(
-            $"/api/users/{result.Value.Id}",
-            result.Value);
+        return result.ToCreatedApiResult(
+            httpContext,
+            user => $"/api/users/{user.Id}",
+            "User created successfully.");
     }
+
 }

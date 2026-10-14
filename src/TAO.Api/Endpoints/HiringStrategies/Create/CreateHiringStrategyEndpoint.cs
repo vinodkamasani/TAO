@@ -23,6 +23,7 @@ public static class CreateHiringStrategyEndpoint
     private static async Task<IResult> HandleAsync(
         Guid campaignId,
         ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var command = new CreateHiringStrategyCommand(
@@ -34,12 +35,13 @@ public static class CreateHiringStrategyEndpoint
 
         if (result.IsFailure)
         {
-            return Results.Problem(
-                result.Error?.Message ?? String.Empty);
+            return result.ToApiFailure(httpContext, "HiringStrategy.CreateFailed", "Failed to create hiring strategy.", StatusCodes.Status500InternalServerError);
         }
 
-        return Results.Created(
-            $"/api/hiringstrategies/{result.Value.Id}",
-            result.Value);
+        return result.ToCreatedApiResult(
+            httpContext,
+            hiringStrategyId =>
+                $"/api/campaigns/{campaignId}/hiring-strategy",
+            "Hiring strategy created successfully.");
     }
 }

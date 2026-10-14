@@ -22,6 +22,7 @@ public static class GetCampaignEndpoint
     private static async Task<IResult> HandleAsync(
         Guid campaignId,
         ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var query = new GetCampaignQuery(campaignId);
@@ -30,6 +31,8 @@ public static class GetCampaignEndpoint
             query,
             cancellationToken);
 
-        return result.ToOkResult();
+        return result.ToApiResult(
+          httpContext,
+          "Campaigns retrieved successfully.");
     }
 }

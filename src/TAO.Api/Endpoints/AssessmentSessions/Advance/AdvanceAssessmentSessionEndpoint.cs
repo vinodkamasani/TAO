@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using TAO.Api.Extensions;
 using TAO.Application.AssessmentSessions.Advance;
 
 namespace TAO.Api.Endpoints.AssessmentSessions.Advance;
@@ -22,22 +23,17 @@ public static class AdvanceAssessmentSessionEndpoint
     }
 
     private static async Task<IResult> HandleAsync(
-        Guid assessmentSessionId,
-        ISender sender,
-        CancellationToken cancellationToken)
+     Guid assessmentSessionId,
+     ISender sender,
+     HttpContext httpContext,
+     CancellationToken cancellationToken)
     {
         var result = await sender.Send(
-            new AdvanceAssessmentSessionCommand(
-                assessmentSessionId),
+            new AdvanceAssessmentSessionCommand(assessmentSessionId),
             cancellationToken);
 
-        if (result.IsFailure)
-        {
-            return Results.Problem(
-                detail: result.Error?.ToString(),
-                statusCode: StatusCodes.Status400BadRequest);
-        }
-
-        return Results.Ok(result.Value);
+        return result.ToApiResult(
+            httpContext,
+            "Assessment session advanced successfully.");
     }
 }

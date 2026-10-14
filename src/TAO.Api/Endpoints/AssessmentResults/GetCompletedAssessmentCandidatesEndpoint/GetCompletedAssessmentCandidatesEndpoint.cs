@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using TAO.Api.Extensions;
 using TAO.Application.AssessmentResults.GetCompletedAssessmentCandidates;
 
 namespace TAO.Api.Endpoints.AssessmentResults.GetCompletedAssessmentCandidatesEndpoint;
@@ -26,6 +27,7 @@ public static class GetCompletedAssessmentCandidatesEndpoint
     private static async Task<IResult> HandleAsync(
         Guid campaignId,
         ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var result = await sender.Send(
@@ -33,13 +35,8 @@ public static class GetCompletedAssessmentCandidatesEndpoint
                 campaignId),
             cancellationToken);
 
-        if (result.IsFailure)
-        {
-            return Results.Problem(
-                detail: result.Error?.ToString(),
-                statusCode: StatusCodes.Status400BadRequest);
-        }
-
-        return Results.Ok(result.Value);
+        return result.ToApiResult(
+                httpContext,
+                "Completed assessment candidates retrieved successfully.");
     }
 }

@@ -20,9 +20,10 @@ public static class CreateAssessmentSessionEndpoint
     }
 
     private static async Task<IResult> HandleAsync(
-        [FromBody] CreateAssessmentSessionRequest request,
-        [FromServices] ISender sender,
-        CancellationToken cancellationToken)
+      [FromBody] CreateAssessmentSessionRequest request,
+      [FromServices] ISender sender,
+      HttpContext httpContext,
+      CancellationToken cancellationToken)
     {
         var command = new CreateAssessmentSessionCommand(
             request.CandidateApplicationId,
@@ -32,13 +33,10 @@ public static class CreateAssessmentSessionEndpoint
             command,
             cancellationToken);
 
-        if (result.IsFailure)
-        {
-            // Use the error's ToString() to include something useful; adjust status code as appropriate.
-            return Results.Problem(detail: result.Error?.ToString(), statusCode: 400);
-        }
-
-        return result.ToCreatedResult(
-            $"/api/assessment-sessions/{result.Value}");
+        return result.ToCreatedApiResult(
+            httpContext,
+            assessmentSessionId =>
+                $"/api/assessment-sessions/{assessmentSessionId}",
+            "Assessment session created successfully.");
     }
 }

@@ -21,10 +21,12 @@ public static class RegenerateJobProfileEndpoint
         return group;
     }
 
+
     private static async Task<IResult> HandleAsync(
         Guid jobProfileId,
         [FromBody] RegenerateJobProfileRequest request,
         ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var command = new RegenerateJobProfileCommand(
@@ -37,13 +39,17 @@ public static class RegenerateJobProfileEndpoint
 
         if (result.IsFailure)
         {
-            // Use the error's ToString() to include something useful; adjust status code as appropriate.
-            return Results.Problem(detail: result.Error?.ToString(), statusCode: 400);
+            return result.ToApiFailure(
+                httpContext,
+                "JobProfile.RegenerateFailed",
+                "Failed to regenerate job profile.",
+                StatusCodes.Status500InternalServerError);
         }
 
-        return result.ToCreatedResult(
-           result.Value is null
-               ? null
-               : $"/api/jobprofiles/{result.Value.Id}");
+        return result.ToCreatedApiResult(
+            httpContext,
+            jobProfile => $"/api/jobprofiles/{jobProfile.Id}",
+            "Job profile regenerated successfully.");
     }
+
 }

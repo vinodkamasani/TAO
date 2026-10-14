@@ -20,9 +20,11 @@ public static class CreateResumeScreeningEndpoint
         return group;
     }
 
+
     private static async Task<IResult> HandleAsync(
         Guid candidateApplicationId,
         ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var command = new CreateResumeScreeningCommand(
@@ -34,11 +36,13 @@ public static class CreateResumeScreeningEndpoint
 
         if (result.IsFailure)
         {
-            return Results.Problem(
-                result.Error?.Message ?? String.Empty);
+            return result.ToApiResult(httpContext);
         }
 
-        return result.ToCreatedResult(
-            id => $"/api/resumescreenings/{id}");
+        return result.ToCreatedApiResult(
+            httpContext,
+            id => $"/api/resumescreenings/{id}",
+            "Resume screening created successfully.");
     }
+
 }

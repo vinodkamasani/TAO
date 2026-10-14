@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using TAO.Api.Extensions;
 using TAO.Application.AssessmentSessions.Workflow;
 
 namespace TAO.Api.Endpoints.AssessmentSessions.Workflow;
@@ -25,6 +26,7 @@ public static class GetAssessmentWorkflowEndpoint
     private static async Task<IResult> HandleAsync(
         Guid assessmentSessionId,
         [FromServices] ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var query = new GetAssessmentWorkflowQuery(
@@ -34,13 +36,8 @@ public static class GetAssessmentWorkflowEndpoint
             query,
             cancellationToken);
 
-        if (result.IsFailure)
-        {
-            return Results.Problem(
-                detail: result.Error?.ToString(),
-                statusCode: 400);
-        }
-
-        return Results.Ok(result.Value);
+        return result.ToApiResult(httpContext,
+            "Assessment workflow found.");
     }
 }
+

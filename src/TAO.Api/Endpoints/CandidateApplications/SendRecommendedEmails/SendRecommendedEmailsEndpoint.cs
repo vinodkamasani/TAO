@@ -23,6 +23,7 @@ public static class SendRecommendedEmailsEndpoint
     private static async Task<IResult> HandleAsync(
         Guid campaignId,
         ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var command = new SendRecommendedEmailsCommand(campaignId);
@@ -37,6 +38,7 @@ public static class SendRecommendedEmailsEndpoint
             return Results.Problem(detail: result.Error?.ToString(), statusCode: 400);
         }
 
-        return result.ToOkResult();
+        return result.ToApiResult(httpContext,
+              "Recommended emails sent successfully.");
     }
 }

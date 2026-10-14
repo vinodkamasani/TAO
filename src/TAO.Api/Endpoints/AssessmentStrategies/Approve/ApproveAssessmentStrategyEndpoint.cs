@@ -27,6 +27,7 @@ public static class ApproveAssessmentStrategyEndpoint
         Guid assessmentStrategyId,
         ApproveAssessmentStrategyRequest request,
         ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var command = new ApproveAssessmentStrategyCommand(
@@ -37,12 +38,7 @@ public static class ApproveAssessmentStrategyEndpoint
             command,
             cancellationToken);
 
-        if (result.IsFailure)
-        {
-            return Results.Problem(
-                result.Error?.Message ?? String.Empty);
-        }
-
-        return result.ToNoContentResult();
+      return result.ToApiResult(httpContext,
+          "Assessment strategy approved successfully.");
     }
 }

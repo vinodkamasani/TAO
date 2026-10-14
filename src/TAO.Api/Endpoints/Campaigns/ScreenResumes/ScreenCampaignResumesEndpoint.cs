@@ -23,6 +23,7 @@ public static class ScreenCampaignResumesEndpoint
     private static async Task<IResult> HandleAsync(
         Guid campaignId,
         ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var command =
@@ -32,12 +33,8 @@ public static class ScreenCampaignResumesEndpoint
             command,
             cancellationToken);
 
-        if (result.IsFailure)
-        {
-            return Results.Problem(
-                result.Error?.Message ?? String.Empty);
-        }
-
-        return result.ToOkResult();
+        return result.ToApiResult(httpContext,
+              "Campaign resumes screened successfully.");
     }
 }
+   

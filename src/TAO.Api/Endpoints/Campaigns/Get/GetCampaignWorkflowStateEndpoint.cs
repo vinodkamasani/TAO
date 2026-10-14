@@ -25,6 +25,7 @@ public static class GetCampaignWorkflowStateEndpoint
     private static async Task<IResult> HandleAsync(
         Guid campaignId,
         ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var query = new GetCampaignWorkflowStateQuery(campaignId);
@@ -33,12 +34,7 @@ public static class GetCampaignWorkflowStateEndpoint
             query,
             cancellationToken);
 
-        if (result.IsFailure)
-        {
-            return Results.Problem(
-                result.Error?.Message ?? String.Empty);
-        }
-
-        return result.ToOkResult();
+        return result.ToApiResult(httpContext,
+                  "Campaign workflow state retrieved successfully.");
     }
 }

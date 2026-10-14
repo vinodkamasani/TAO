@@ -25,6 +25,7 @@ public static class GetCampaignJobProfileEndpoint
     private static async Task<IResult> HandleAsync(
         Guid campaignId,
         ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var query = new GetCampaignJobProfileQuery(campaignId);
@@ -33,12 +34,7 @@ public static class GetCampaignJobProfileEndpoint
             query,
             cancellationToken);
 
-        if (result.IsFailure)
-        {
-            return Results.Problem(
-                result.Error?.Message ?? String.Empty);
-        }
-
-        return result.ToOkResult();
+       return result.ToApiResult(httpContext,
+            "Campaign job profile found.");
     }
 }

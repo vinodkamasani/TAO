@@ -21,10 +21,12 @@ public static class CreateJobProfileEndpoint
         return group;
     }
 
+
     private static async Task<IResult> HandleAsync(
         Guid campaignId,
         [FromBody] CreateJobProfileRequest request,
         ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var command = new CreateJobProfileCommand(
@@ -37,13 +39,17 @@ public static class CreateJobProfileEndpoint
 
         if (result.IsFailure)
         {
-            return Results.Problem(
-                result.Error?.Message ?? String.Empty);
+            return result.ToApiFailure(
+                httpContext,
+                "JobProfile.CreateFailed",
+                "Failed to create job profile.",
+                StatusCodes.Status500InternalServerError);
         }
 
-        return result.ToCreatedResult(
-            result.Value is null
-                ? null
-                : $"/api/jobprofiles/{result.Value.Id}");
+        return result.ToCreatedApiResult(
+            httpContext,
+            jobProfile => $"/api/jobprofiles/{jobProfile.Id}",
+            "Job profile created successfully.");
     }
+
 }

@@ -23,6 +23,7 @@ public static class GetAssessmentStrategyEndpoint
     private static async Task<IResult> HandleAsync(
         Guid campaignId,
         ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var query = new GetAssessmentStrategyQuery(
@@ -32,12 +33,7 @@ public static class GetAssessmentStrategyEndpoint
             query,
             cancellationToken);
 
-        if (result.IsFailure)
-        {
-            return Results.Problem(
-                result.Error?.Message ?? String.Empty);
-        }
-
-        return result.ToOkResult();
+        return result.ToApiResult(httpContext,
+            "Assessment strategy found.");
     }
 }

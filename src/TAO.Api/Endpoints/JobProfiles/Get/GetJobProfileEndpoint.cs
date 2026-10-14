@@ -23,6 +23,7 @@ public static class GetJobProfileEndpoint
     private static async Task<IResult> HandleAsync(
         Guid jobProfileId,
         ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var query = new GetJobProfileQuery(jobProfileId);
@@ -31,12 +32,6 @@ public static class GetJobProfileEndpoint
             query,
             cancellationToken);
 
-        if (result.IsFailure)
-        {
-            // Use the error's ToString() to include something useful; adjust status code as appropriate.
-            return Results.Problem(detail: result.Error?.ToString(), statusCode: 400);
-        }
-
-        return result.ToOkResult();
+         return result.ToApiResult(httpContext, "Job profile retrieved successfully.");
     }
 }

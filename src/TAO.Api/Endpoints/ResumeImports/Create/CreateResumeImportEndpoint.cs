@@ -25,15 +25,17 @@ public static class CreateResumeImportEndpoint
         return group;
     }
 
+
     private static async Task<IResult> HandleAsync(
-    Guid campaignId,
-    [FromForm] CreateResumeImportRequest request,
-    ISender sender,
-    CancellationToken cancellationToken)
+        Guid campaignId,
+        [FromForm] CreateResumeImportRequest request,
+        ISender sender,
+        HttpContext httpContext,
+        CancellationToken cancellationToken)
     {
         if (request?.Resumes == null || request.Resumes.Count == 0)
         {
-            return Results.BadRequest("At least one resume must be uploaded.");
+            return null;
         }
 
         var uploadedResumes = new List<UploadedResume>();
@@ -65,11 +67,13 @@ public static class CreateResumeImportEndpoint
 
         if (result.IsFailure)
         {
-            return Results.Problem(
-                result.Error?.Message ?? String.Empty);
+            return result.ToApiResult(httpContext);
         }
 
-        return result.ToCreatedResult(
-            $"/api/resumeimports/{result.Value}");
+        return result.ToCreatedApiResult(
+            httpContext,
+            resumeImportId => $"/api/resumeimports/{resumeImportId}",
+            "Resume import created successfully.");
     }
+
 }

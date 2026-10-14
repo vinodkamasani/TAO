@@ -29,6 +29,7 @@ public static class LoginEndpoint
     private static async Task<IResult> HandleAsync(
         [FromBody] LoginRequest request,
         ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var command = new LoginCommand(
@@ -39,11 +40,6 @@ public static class LoginEndpoint
             command,
             cancellationToken);
 
-        if (!result.IsSuccess)
-        {
-            return Results.Unauthorized();
-        }
-
-        return Results.Ok(result.Value);
+        return result.ToApiResult(httpContext, "Login successful");
     }
 }

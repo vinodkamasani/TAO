@@ -20,21 +20,17 @@ public static class EvaluateAssessmentQuestionEndpoint
     }
 
     private static async Task<IResult> HandleAsync(
-        Guid assessmentQuestionId,
-        [FromServices] ISender sender,
-        CancellationToken cancellationToken)
+       Guid assessmentQuestionId,
+       [FromServices] ISender sender,
+       HttpContext httpContext,
+       CancellationToken cancellationToken)
     {
         var result = await sender.Send(
-            new EvaluateAssessmentQuestionCommand(
-                assessmentQuestionId),
+            new EvaluateAssessmentQuestionCommand(assessmentQuestionId),
             cancellationToken);
 
-        if (result.IsFailure)
-        {
-            return Results.Problem(
-                result.Error?.Message ?? String.Empty);
-        }
-
-        return result.ToNoContentResult();
+        return result.ToApiResult(
+            httpContext,
+            "Assessment question evaluated successfully.");
     }
 }

@@ -24,6 +24,7 @@ public static class GetCandidateApplicationsEndpoint
     private static async Task<IResult> HandleAsync(
         Guid campaignId,
         ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var query = new GetCandidateApplicationsQuery(
@@ -33,6 +34,7 @@ public static class GetCandidateApplicationsEndpoint
             query,
             cancellationToken);
 
-        return result.ToOkResult();
+        return result.ToApiResult(httpContext,
+            "Candidate applications found.");
     }
 }

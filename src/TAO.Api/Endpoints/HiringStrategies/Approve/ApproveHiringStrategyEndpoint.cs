@@ -25,6 +25,7 @@ public static class ApproveHiringStrategyEndpoint
         Guid hiringStrategyId,
         [FromBody] ApproveHiringStrategyRequest request,
         ISender sender,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var command = new ApproveHiringStrategyCommand(
@@ -35,12 +36,7 @@ public static class ApproveHiringStrategyEndpoint
             command,
             cancellationToken);
 
-        if (result.IsFailure)
-        {
-            return Results.Problem(
-                result.Error?.Message ?? String.Empty);
-        }
-
-        return result.ToNoContentResult();
+        return result.ToApiResult(httpContext,
+            "Hiring strategy approved successfully.");
     }
 }
