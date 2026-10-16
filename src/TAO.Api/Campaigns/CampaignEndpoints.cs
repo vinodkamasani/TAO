@@ -11,6 +11,7 @@ using TAO.Api.Endpoints.HiringStrategies.Get;
 using TAO.Api.Endpoints.JobProfiles.Create;
 using TAO.Api.Endpoints.ResumeImports.Create;
 using TAO.Api.Endpoints.ResumeScreenings.Create;
+using TAO.Api.Endpoints.HiringStrategies.UpdateThreshold;
 
 namespace TAO.Api.Endpoints.Campaigns;
 
@@ -39,6 +40,7 @@ public static class CampaignEndpoints
         group.MapScreenCampaignResumesEndpoint();
         group.MapGetAssessmentStrategyEndpoint();
         group.MapUpdateAssessmentStrategyEndpoint();
+        group.MapUpdateThresholdEndpoint();
         return group;
     }
 }

@@ -76,7 +76,7 @@ Overall Match Percentage =
 
 Set isRecommended = true only when:
 
-- Overall Match Percentage >= 70
+- Overall Match Percentage >= the threshold percentage specified in the Hiring Strategy.
 - Most mandatory skills are satisfied.
 
 Otherwise false.

@@ -1,6 +1,9 @@
 ﻿using TAO.Domain.Common;
 using TAO.Domain.Enums;
 using TAO.Domain.ValueObjects;
+using System.Globalization;
+using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 
 public sealed class HiringStrategy : AiGeneratedArtifact
 {
@@ -89,4 +92,59 @@ public sealed class HiringStrategy : AiGeneratedArtifact
             content,
             structuredContent);
     }
+
+
+    public void UpdateResumeMatchThreshold(int thresholdPercentage)
+    {
+        if (thresholdPercentage is < 0 or > 100)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(thresholdPercentage),
+                "Resume match threshold must be between 0 and 100.");
+        }
+
+        // Update the existing structured JSON content.
+        var structuredJson = JsonNode.Parse(StructuredContent.Value)
+            as JsonObject
+            ?? throw new InvalidOperationException(
+                "Hiring strategy structured content must be a JSON object.");
+
+        if (!structuredJson.ContainsKey("recommendedResumeMatchThreshold"))
+        {
+            throw new InvalidOperationException(
+                "The recommended resume match threshold was not found in structured content.");
+        }
+
+        structuredJson["recommendedResumeMatchThreshold"] =
+            thresholdPercentage;
+
+        var updatedStructuredContent = StructuredContent.Create(
+            structuredJson.ToJsonString());
+
+        // Update the existing Markdown section.
+        var thresholdValue = thresholdPercentage.ToString(
+            CultureInfo.InvariantCulture);
+
+        const string pattern =
+            @"(?m)^(## Resume Match Threshold)[ \t]*(\r?\n)[^\r\n]*";
+
+        var updatedMarkdown = Regex.Replace(
+            Content.Value,
+            pattern,
+            match => $"{match.Groups[1].Value}" +
+                     $"{match.Groups[2].Value}" +
+                     thresholdValue,
+            RegexOptions.None);
+
+        if (updatedMarkdown == Content.Value)
+        {
+            throw new InvalidOperationException(
+                "The Resume Match Threshold section was not found in Markdown content.");
+        }
+
+        // Assign both value objects only after both updates succeed.
+        StructuredContent = updatedStructuredContent;
+        Content = MarkdownContent.Create(updatedMarkdown);
+    }
+
 }
